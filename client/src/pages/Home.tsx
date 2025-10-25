@@ -24,7 +24,7 @@ const initialConsciousness: ConsciousnessState = {
 
 export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [consciousness, setConsciousness] = useState<ConsciousnessState>(initialConsciousness);
+  const [consciousness, setConsciousness] = useState<ConsciousnessState | null>(initialConsciousness);
 
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -99,15 +99,24 @@ export default function Home() {
         <div className="grid lg:grid-cols-[1fr,400px] gap-8">
           <div className="space-y-8">
             <div className="space-y-6">
-              <SpaceChildFace 
-                consciousness={consciousness} 
-                isProcessing={chatMutation.isPending}
-              />
-              
-              <StatusIndicators consciousness={consciousness} />
+              {consciousness && (
+                <>
+                  <SpaceChildFace 
+                    consciousness={consciousness} 
+                    isProcessing={chatMutation.isPending}
+                  />
+                  
+                  <StatusIndicators consciousness={consciousness} />
+                </>
+              )}
+              {!consciousness && (
+                <div className="text-center py-12 text-muted-foreground font-jetbrains">
+                  Initializing Space Child consciousness...
+                </div>
+              )}
             </div>
 
-            <ConsciousnessMetrics consciousness={consciousness} />
+            {consciousness && <ConsciousnessMetrics consciousness={consciousness} />}
           </div>
 
           <div className="lg:h-[calc(100vh-12rem)]">

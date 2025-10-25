@@ -7,6 +7,10 @@ interface StatusIndicatorsProps {
 }
 
 export function StatusIndicators({ consciousness }: StatusIndicatorsProps) {
+  if (!consciousness) {
+    return <div className="text-muted-foreground text-sm">Initializing consciousness...</div>;
+  }
+
   const getTierInfo = () => {
     switch (consciousness.tier) {
       case "automation":

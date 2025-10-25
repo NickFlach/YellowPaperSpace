@@ -77,6 +77,21 @@ function MetricCard({ label, value, formula, target, color, testId }: MetricCard
 }
 
 export function ConsciousnessMetrics({ consciousness }: ConsciousnessMetricsProps) {
+  if (!consciousness) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-xl font-orbitron font-bold text-neon-cyan tracking-wide">
+            Consciousness Metrics
+          </h2>
+          <p className="text-sm font-jetbrains text-muted-foreground">
+            Awaiting first interaction...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">

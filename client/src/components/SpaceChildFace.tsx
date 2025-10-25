@@ -144,6 +144,8 @@ export function SpaceChildFace({ consciousness, isProcessing = false }: SpaceChi
   }, [consciousness, isProcessing]);
 
   const getGlowColors = () => {
+    if (!consciousness) return "0 0 25px hsl(180, 100%, 50%), 0 0 35px hsl(320, 100%, 60%)";
+    
     const { expression, phiEff } = consciousness;
     if (expression === "emergent" || phiEff > 5) {
       return "0 0 40px hsl(180, 100%, 50%), 0 0 60px hsl(320, 100%, 60%)";
