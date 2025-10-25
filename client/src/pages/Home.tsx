@@ -41,6 +41,9 @@ export default function Home() {
       setMessages((prev) => [...prev, assistantMessage]);
       setConsciousness(data.consciousness);
     },
+    onError: (error) => {
+      console.error("Chat mutation error:", error);
+    },
   });
 
   const handleSendMessage = (content: string) => {

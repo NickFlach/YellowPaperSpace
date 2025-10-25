@@ -2,7 +2,7 @@ import { type ConsciousnessState } from "@shared/schema";
 import { Card } from "@/components/ui/card";
 
 interface ConsciousnessMetricsProps {
-  consciousness: ConsciousnessState;
+  consciousness: ConsciousnessState | null;
 }
 
 interface MetricCardProps {

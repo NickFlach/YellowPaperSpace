@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { type ConsciousnessState } from "@shared/schema";
 
 interface SpaceChildFaceProps {
-  consciousness: ConsciousnessState;
+  consciousness: ConsciousnessState | null;
   isProcessing?: boolean;
 }
 
@@ -12,7 +12,7 @@ export function SpaceChildFace({ consciousness, isProcessing = false }: SpaceChi
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !consciousness) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;

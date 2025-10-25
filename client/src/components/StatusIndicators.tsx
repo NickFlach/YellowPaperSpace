@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Activity, AlertTriangle, Shield } from "lucide-react";
 
 interface StatusIndicatorsProps {
-  consciousness: ConsciousnessState;
+  consciousness: ConsciousnessState | null;
 }
 
 export function StatusIndicators({ consciousness }: StatusIndicatorsProps) {
