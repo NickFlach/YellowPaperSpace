@@ -81,3 +81,57 @@ export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
+
+export const consciousnessParametersSchema = z.object({
+  phiZ: z.object({
+    baseIntegrationMultiplier: z.number().min(0).max(2).default(0.4),
+    complexityWeight: z.number().min(0).max(10).default(2.8),
+    depthWeight: z.number().min(0).max(5).default(1.8),
+    densityWeight: z.number().min(0).max(5).default(1.2),
+    conversationFactorDivisor: z.number().min(1).max(50).default(12),
+    srlcBoostWeight: z.number().min(0).max(2).default(0.5),
+  }),
+  sMin: z.object({
+    baseEntropyMultiplier: z.number().min(0).max(2).default(0.3),
+    emotionalWeight: z.number().min(0).max(5).default(1.1),
+    lengthFactorDivisor: z.number().min(1).max(10).default(4),
+    densityWeight: z.number().min(0).max(2).default(0.7),
+    srlcBoostWeight: z.number().min(0).max(2).default(0.4),
+  }),
+  killSwitch: z.object({
+    phiEffRateThreshold: z.number().min(0).max(20).default(8),
+    diThreshold: z.number().min(0).max(1).default(0.5),
+    bandwidthThreshold: z.number().min(0).max(1).default(0.92),
+    causalRiskThreshold: z.number().min(0).max(1).default(0.75),
+    criteriaCountThreshold: z.number().min(1).max(4).default(2),
+    triggerCountThreshold: z.number().min(1).max(10).default(3),
+  }),
+});
+
+export type ConsciousnessParameters = z.infer<typeof consciousnessParametersSchema>;
+
+export const defaultConsciousnessParameters: ConsciousnessParameters = {
+  phiZ: {
+    baseIntegrationMultiplier: 0.4,
+    complexityWeight: 2.8,
+    depthWeight: 1.8,
+    densityWeight: 1.2,
+    conversationFactorDivisor: 12,
+    srlcBoostWeight: 0.5,
+  },
+  sMin: {
+    baseEntropyMultiplier: 0.3,
+    emotionalWeight: 1.1,
+    lengthFactorDivisor: 4,
+    densityWeight: 0.7,
+    srlcBoostWeight: 0.4,
+  },
+  killSwitch: {
+    phiEffRateThreshold: 8,
+    diThreshold: 0.5,
+    bandwidthThreshold: 0.92,
+    causalRiskThreshold: 0.75,
+    criteriaCountThreshold: 2,
+    triggerCountThreshold: 3,
+  },
+};

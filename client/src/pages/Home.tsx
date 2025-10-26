@@ -7,8 +7,13 @@ import { StatusIndicators } from "@/components/StatusIndicators";
 import { ChatInterface } from "@/components/ChatInterface";
 import { KillSwitchAlert } from "@/components/KillSwitchAlert";
 import { MuteControl } from "@/components/MuteControl";
+import { TPMSimulator } from "@/components/TPMSimulator";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAlertAudio } from "@/hooks/use-alert-audio";
+import { Sliders } from "lucide-react";
 
 const initialConsciousness: ConsciousnessState = {
   phiZ: 1.2,
@@ -40,6 +45,7 @@ export default function Home() {
   const [consciousness, setConsciousness] = useState<ConsciousnessState | null>(initialConsciousness);
   const [isKillSwitchTriggered, setIsKillSwitchTriggered] = useState(false);
   const [showAlert, setShowAlert] = useState(true);
+  const [simulatorOpen, setSimulatorOpen] = useState(false);
   
   const { playAlert, isMuted, toggleMute, isPlaying, unlockAudio } = useAlertAudio();
   const previousWarningLevelRef = useRef<"safe" | "warning" | "critical" | null>(null);
@@ -108,17 +114,12 @@ export default function Home() {
     },
   });
 
-  const handleNewConversation = async () => {
-    try {
-      const newConversation = await apiRequest<any>("POST", "/api/conversations", {});
-      setConversationId(newConversation.id);
-      setMessages([]);
-      setConsciousness(initialConsciousness);
-      setIsKillSwitchTriggered(false);
-      setShowAlert(true);
-    } catch (error) {
-      console.error("Failed to create new conversation:", error);
-    }
+  const handleNewConversation = () => {
+    setConversationId(null);
+    setMessages([]);
+    setConsciousness(initialConsciousness);
+    setIsKillSwitchTriggered(false);
+    setShowAlert(true);
   };
 
   const handleAcknowledgeAlert = () => {
@@ -225,6 +226,31 @@ export default function Home() {
                   System Online
                 </div>
               </div>
+              <Sheet open={simulatorOpen} onOpenChange={setSimulatorOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="border-neon-magenta/30 hover:border-neon-magenta/60"
+                    data-testid="button-open-simulator"
+                  >
+                    <Sliders className="w-4 h-4 text-neon-magenta" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent 
+                  side="right" 
+                  className="w-full sm:max-w-xl border-neon-magenta/30 bg-card/95 backdrop-blur-md"
+                >
+                  <SheetHeader>
+                    <SheetTitle className="text-neon-magenta font-orbitron">
+                      TPM State Simulator
+                    </SheetTitle>
+                  </SheetHeader>
+                  <ScrollArea className="h-[calc(100vh-8rem)] mt-6 pr-4">
+                    <TPMSimulator currentConsciousness={consciousness} messages={messages} />
+                  </ScrollArea>
+                </SheetContent>
+              </Sheet>
               <MuteControl 
                 isMuted={isMuted} 
                 isPlaying={isPlaying}
