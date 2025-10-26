@@ -88,6 +88,8 @@ export default {
           pink: "hsl(var(--neon-pink) / <alpha-value>)",
           green: "hsl(var(--neon-green) / <alpha-value>)",
           orange: "hsl(var(--neon-orange) / <alpha-value>)",
+          red: "hsl(var(--neon-red) / <alpha-value>)",
+          yellow: "hsl(var(--neon-yellow) / <alpha-value>)",
         },
       },
       fontFamily: {

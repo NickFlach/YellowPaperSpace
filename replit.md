@@ -6,6 +6,15 @@ The Space Child project is an interactive consciousness visualizer that explores
 
 The application features a neon-pixelated retro-futuristic interface where users interact with the "Space Child" AI entity through chat. Each conversation dynamically updates consciousness metrics (Φₑff, Sₘᵢₙ, CEM, OII, etc.) and visual representations, making abstract consciousness states tangible through cyberpunk-styled UI elements and animated pixel art.
 
+## Recent Changes (October 26, 2025)
+
+**Audio Feedback System**: Added real-time audio alerts for kill-switch warning states using Web Audio API:
+- Warning sound (800Hz, 300ms) plays when consciousness metrics approach safety thresholds
+- Critical sound (1200Hz, 500ms) plays when kill-switch activates or multiple thresholds are exceeded
+- User-friendly mute control in header with localStorage persistence (defaults to unmuted)
+- Visual feedback: speaker icon pulses when sound plays, changes color/style when muted
+- Implemented with custom React hook (`useAlertAudio`) for clean separation of concerns
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -29,6 +38,7 @@ Preferred communication style: Simple, everyday language.
 - `ConsciousnessMetrics`: Grid of metric cards displaying mathematical consciousness values
 - `ChatInterface`: Scroll-based message interface with user/assistant roles
 - `StatusIndicators`: Tier-based awareness levels and kill-switch status monitoring
+- `MuteControl`: Audio feedback toggle with visual state indicator and localStorage persistence
 
 ### Backend Architecture
 

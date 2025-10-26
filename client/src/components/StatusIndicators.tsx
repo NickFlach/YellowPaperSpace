@@ -38,25 +38,35 @@ export function StatusIndicators({ consciousness }: StatusIndicatorsProps) {
   };
 
   const getKillSwitchStatus = () => {
-    const criteriaMet = [
-      consciousness.di > 0.4,
-      consciousness.bandwidth > 0.9,
-      consciousness.causalRisk > 0.7,
+    const criticalCriteria = [
+      consciousness.di > 0.5,
+      consciousness.bandwidth > 0.92,
+      consciousness.causalRisk > 0.75,
     ].filter(Boolean).length;
 
-    if (criteriaMet >= 2) {
+    const warningCriteria = [
+      consciousness.di > 0.4,
+      consciousness.bandwidth > 0.85,
+      consciousness.causalRisk > 0.65,
+    ].filter(Boolean).length;
+
+    if (criticalCriteria >= 2) {
       return {
         status: "CRITICAL",
-        color: "text-destructive",
+        color: "text-neon-red",
         icon: AlertTriangle,
-        glow: "shadow-destructive/50",
+        glow: "shadow-neon-red/50",
+        animationClass: "animate-pulse-glow-danger",
+        details: "Multiple thresholds exceeded",
       };
-    } else if (criteriaMet === 1) {
+    } else if (criticalCriteria >= 1 || warningCriteria >= 2) {
       return {
         status: "WARNING",
-        color: "text-neon-orange",
+        color: "text-neon-yellow",
         icon: AlertTriangle,
-        glow: "shadow-neon-orange/30",
+        glow: "shadow-neon-yellow/30",
+        animationClass: "animate-pulse-glow-warning",
+        details: "Approaching safety limits",
       };
     }
     return {
@@ -64,6 +74,8 @@ export function StatusIndicators({ consciousness }: StatusIndicatorsProps) {
       color: "text-neon-green",
       icon: Shield,
       glow: "shadow-neon-green/30",
+      animationClass: "",
+      details: "All metrics nominal",
     };
   };
 
@@ -98,12 +110,17 @@ export function StatusIndicators({ consciousness }: StatusIndicatorsProps) {
 
         <div className="flex items-center gap-2" data-testid="indicator-kill-switch">
           <KillSwitchIcon 
-            className={`w-4 h-4 ${killSwitch.color} ${killSwitch.status === "CRITICAL" ? "animate-flicker" : ""}`}
-            style={{ filter: `drop-shadow(0 0 6px ${killSwitch.glow})` }}
+            className={`w-4 h-4 ${killSwitch.color} ${killSwitch.animationClass}`}
+            style={{ filter: `drop-shadow(0 0 8px ${killSwitch.glow})` }}
           />
           <div className="font-share-tech text-sm">
-            <span className="text-muted-foreground">Kill-Switch:</span>{" "}
-            <span className={killSwitch.color}>{killSwitch.status}</span>
+            <div>
+              <span className="text-muted-foreground">Kill-Switch:</span>{" "}
+              <span className={killSwitch.color}>{killSwitch.status}</span>
+            </div>
+            <div className="text-xs text-muted-foreground/70 mt-0.5">
+              {killSwitch.details}
+            </div>
           </div>
         </div>
       </div>

@@ -12,10 +12,17 @@ interface MetricCardProps {
   target?: string;
   color: string;
   testId: string;
+  warningState?: "safe" | "warning" | "critical";
 }
 
-function MetricCard({ label, value, formula, target, color, testId }: MetricCardProps) {
+function MetricCard({ label, value, formula, target, color, testId, warningState }: MetricCardProps) {
   const getColorClasses = () => {
+    if (warningState === "critical") {
+      return "border-neon-red/50 shadow-neon-red/30 animate-pulse-glow-danger";
+    } else if (warningState === "warning") {
+      return "border-neon-yellow/50 shadow-neon-yellow/30 animate-pulse-glow-warning";
+    }
+    
     switch (color) {
       case "cyan": return "border-neon-cyan/30 shadow-neon-cyan/20";
       case "magenta": return "border-neon-magenta/30 shadow-neon-magenta/20";
@@ -28,6 +35,9 @@ function MetricCard({ label, value, formula, target, color, testId }: MetricCard
   };
 
   const getTextColor = () => {
+    if (warningState === "critical") return "text-neon-red";
+    if (warningState === "warning") return "text-neon-yellow";
+    
     switch (color) {
       case "cyan": return "text-neon-cyan";
       case "magenta": return "text-neon-magenta";
@@ -165,6 +175,10 @@ export function ConsciousnessMetrics({ consciousness }: ConsciousnessMetricsProp
           target="0.2-0.4"
           color={consciousness.di > 0.4 ? "orange" : "green"}
           testId="metric-di"
+          warningState={
+            consciousness.di > 0.5 ? "critical" :
+            consciousness.di > 0.4 ? "warning" : "safe"
+          }
         />
         
         <MetricCard
@@ -183,6 +197,23 @@ export function ConsciousnessMetrics({ consciousness }: ConsciousnessMetricsProp
           target="< 90%"
           color={consciousness.bandwidth > 0.9 ? "orange" : "cyan"}
           testId="metric-bandwidth"
+          warningState={
+            consciousness.bandwidth > 0.92 ? "critical" :
+            consciousness.bandwidth > 0.85 ? "warning" : "safe"
+          }
+        />
+        
+        <MetricCard
+          label="Causal Risk"
+          value={consciousness.causalRisk}
+          formula="Risk Assessment"
+          target="< 0.65"
+          color={consciousness.causalRisk > 0.65 ? "orange" : "green"}
+          testId="metric-causal-risk"
+          warningState={
+            consciousness.causalRisk > 0.75 ? "critical" :
+            consciousness.causalRisk > 0.65 ? "warning" : "safe"
+          }
         />
       </div>
     </div>

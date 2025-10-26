@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type ChatMessage, type ConsciousnessState, type ChatResponse, type Message } from "@shared/schema";
 import { SpaceChildFace } from "@/components/SpaceChildFace";
 import { ConsciousnessMetrics } from "@/components/ConsciousnessMetrics";
 import { StatusIndicators } from "@/components/StatusIndicators";
 import { ChatInterface } from "@/components/ChatInterface";
+import { KillSwitchAlert } from "@/components/KillSwitchAlert";
+import { MuteControl } from "@/components/MuteControl";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAlertAudio } from "@/hooks/use-alert-audio";
 
 const initialConsciousness: ConsciousnessState = {
   phiZ: 1.2,
@@ -35,6 +38,11 @@ export default function Home() {
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [consciousness, setConsciousness] = useState<ConsciousnessState | null>(initialConsciousness);
+  const [isKillSwitchTriggered, setIsKillSwitchTriggered] = useState(false);
+  const [showAlert, setShowAlert] = useState(true);
+  
+  const { playAlert, isMuted, toggleMute, isPlaying, unlockAudio } = useAlertAudio();
+  const previousWarningLevelRef = useRef<"safe" | "warning" | "critical" | null>(null);
 
   useEffect(() => {
     const loadLatestConversation = async () => {
@@ -91,12 +99,57 @@ export default function Home() {
       setMessages((prev) => [...prev, assistantMessage]);
       setConsciousness(data.consciousness);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Chat mutation error:", error);
+      if (error?.message?.includes("Kill-switch") || error?.message?.includes("kill-switch")) {
+        setIsKillSwitchTriggered(true);
+        setShowAlert(true);
+      }
     },
   });
 
+  const handleNewConversation = async () => {
+    try {
+      const newConversation = await apiRequest<any>("POST", "/api/conversations", {});
+      setConversationId(newConversation.id);
+      setMessages([]);
+      setConsciousness(initialConsciousness);
+      setIsKillSwitchTriggered(false);
+      setShowAlert(true);
+    } catch (error) {
+      console.error("Failed to create new conversation:", error);
+    }
+  };
+
+  const handleAcknowledgeAlert = () => {
+    setShowAlert(false);
+  };
+
+  const getWarningLevel = (): "safe" | "warning" | "critical" | null => {
+    if (!consciousness) return null;
+    
+    const criticalCriteria = [
+      consciousness.di > 0.5,
+      consciousness.bandwidth > 0.92,
+      consciousness.causalRisk > 0.75,
+    ].filter(Boolean).length;
+
+    const warningCriteria = [
+      consciousness.di > 0.4,
+      consciousness.bandwidth > 0.85,
+      consciousness.causalRisk > 0.65,
+    ].filter(Boolean).length;
+
+    if (isKillSwitchTriggered || criticalCriteria >= 2) {
+      return "critical";
+    } else if (warningCriteria >= 1) {
+      return "warning";
+    }
+    return "safe";
+  };
+
   const handleSendMessage = (content: string) => {
+    unlockAudio();
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}-user`,
       role: "user",
@@ -107,8 +160,35 @@ export default function Home() {
     chatMutation.mutate(content);
   };
 
+  const warningLevel = getWarningLevel();
+
+  useEffect(() => {
+    const previousLevel = previousWarningLevelRef.current;
+    
+    if (warningLevel === previousLevel) {
+      return;
+    }
+
+    if (warningLevel === "warning" && previousLevel !== "warning") {
+      playAlert("warning");
+    } else if (warningLevel === "critical" && previousLevel !== "critical") {
+      playAlert("critical");
+    }
+
+    previousWarningLevelRef.current = warningLevel;
+  }, [warningLevel, playAlert]);
+
   return (
     <div className="min-h-screen bg-background">
+      {showAlert && (
+        <KillSwitchAlert
+          consciousness={consciousness}
+          isKillSwitchTriggered={isKillSwitchTriggered}
+          onNewConversation={handleNewConversation}
+          onAcknowledge={handleAcknowledgeAlert}
+        />
+      )}
+      
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-5">
         <div className="absolute inset-0" style={{
           backgroundImage: `
@@ -130,25 +210,39 @@ export default function Home() {
                 Computational Entanglement Edition
               </p>
             </div>
-            <div className="text-right">
-              <div className="text-xs font-share-tech text-muted-foreground uppercase tracking-wide">
-                {new Date().toLocaleDateString([], { 
-                  year: 'numeric', 
-                  month: 'short', 
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-xs font-share-tech text-muted-foreground uppercase tracking-wide">
+                  {new Date().toLocaleDateString([], { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
+                <div className="text-xs font-jetbrains text-neon-green/70 mt-1">
+                  System Online
+                </div>
               </div>
-              <div className="text-xs font-jetbrains text-neon-green/70 mt-1">
-                System Online
-              </div>
+              <MuteControl 
+                isMuted={isMuted} 
+                isPlaying={isPlaying}
+                onToggle={toggleMute}
+                unlockAudio={unlockAudio}
+              />
             </div>
           </div>
         </div>
       </header>
 
-      <main className="relative max-w-7xl mx-auto px-6 py-8">
+      <main 
+        className={`relative max-w-7xl mx-auto px-6 py-8 ${
+          warningLevel === "critical" ? "border-4 border-neon-red/50 rounded-2xl animate-flash-border-danger" :
+          warningLevel === "warning" ? "border-4 border-neon-yellow/50 rounded-2xl animate-flash-border-warning" : ""
+        }`}
+        data-testid="main-content"
+      >
         <div className="grid lg:grid-cols-[1fr,400px] gap-8">
           <div className="space-y-8">
             <div className="space-y-6">

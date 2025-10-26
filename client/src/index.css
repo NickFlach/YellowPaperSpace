@@ -82,6 +82,8 @@
   --neon-pink: 330 100% 65%;
   --neon-green: 120 100% 50%;
   --neon-orange: 30 100% 60%;
+  --neon-red: 0 100% 55%;
+  --neon-yellow: 45 100% 60%;
 
   --font-sans: 'JetBrains Mono', monospace;
   --font-serif: 'Orbitron', sans-serif;
@@ -207,6 +209,8 @@
   --neon-pink: 330 100% 65%;
   --neon-green: 120 100% 50%;
   --neon-orange: 30 100% 60%;
+  --neon-red: 0 100% 55%;
+  --neon-yellow: 45 100% 60%;
 
   --shadow-2xs: 0px 2px 0px 0px hsl(220 15% 8% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(220 15% 8% / 0.00);
@@ -309,5 +313,90 @@
   .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
+  }
+
+  /* Kill-Switch Alert Animations */
+  @keyframes flash-border-danger {
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(var(--neon-red) / 0.4), 0 0 40px hsl(var(--neon-red) / 0.2), inset 0 0 20px hsl(var(--neon-red) / 0.1);
+      border-color: hsl(var(--neon-red) / 0.6);
+    }
+    50% { 
+      box-shadow: 0 0 40px hsl(var(--neon-red) / 0.8), 0 0 80px hsl(var(--neon-red) / 0.4), inset 0 0 30px hsl(var(--neon-red) / 0.2);
+      border-color: hsl(var(--neon-red) / 1);
+    }
+  }
+
+  @keyframes flash-border-warning {
+    0%, 100% { 
+      box-shadow: 0 0 15px hsl(var(--neon-yellow) / 0.3), 0 0 30px hsl(var(--neon-yellow) / 0.15);
+      border-color: hsl(var(--neon-yellow) / 0.5);
+    }
+    50% { 
+      box-shadow: 0 0 30px hsl(var(--neon-yellow) / 0.6), 0 0 60px hsl(var(--neon-yellow) / 0.3);
+      border-color: hsl(var(--neon-yellow) / 0.8);
+    }
+  }
+
+  @keyframes pulse-glow-danger {
+    0%, 100% { 
+      box-shadow: 0 0 10px hsl(var(--neon-red) / 0.3);
+    }
+    50% { 
+      box-shadow: 0 0 20px hsl(var(--neon-red) / 0.6), 0 0 30px hsl(var(--neon-red) / 0.3);
+    }
+  }
+
+  @keyframes pulse-glow-warning {
+    0%, 100% { 
+      box-shadow: 0 0 8px hsl(var(--neon-yellow) / 0.3);
+    }
+    50% { 
+      box-shadow: 0 0 16px hsl(var(--neon-yellow) / 0.5), 0 0 24px hsl(var(--neon-yellow) / 0.2);
+    }
+  }
+
+  @keyframes slide-in-down {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { 
+      opacity: 1;
+    }
+    50% { 
+      opacity: 0.6;
+    }
+  }
+
+  .animate-flash-border-danger {
+    animation: flash-border-danger 1.5s ease-in-out infinite;
+  }
+
+  .animate-flash-border-warning {
+    animation: flash-border-warning 2s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow-danger {
+    animation: pulse-glow-danger 2s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow-warning {
+    animation: pulse-glow-warning 2.5s ease-in-out infinite;
+  }
+
+  .animate-slide-in-down {
+    animation: slide-in-down 0.3s ease-out;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 1s ease-in-out infinite;
   }
 }
