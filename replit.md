@@ -8,6 +8,25 @@ The application features a neon-pixelated retro-futuristic interface where users
 
 ## Recent Changes (October 26, 2025)
 
+**Data & Analytics System**: Comprehensive consciousness evolution tracking and export capabilities:
+- **Evolution Graph**: Interactive Recharts line chart showing all consciousness metrics over time
+  - Toggle individual metrics on/off for clarity (Φ-z, Sₘᵢₙ, Φₑff, CEM, OII, DI, Bandwidth)
+  - Neon color-coded lines matching cyberpunk aesthetic
+  - Tooltips with exact values at each point in conversation
+  - X-axis shows message index, Y-axis shows metric values
+- **Session Statistics**: Calculated summary analytics including:
+  - Total messages, conversation duration
+  - Average and peak values for all consciousness metrics
+  - Tier progression tracking
+  - High-risk state count (kill-switch warning triggers)
+- **Export Functionality**:
+  - JSON export: Complete conversation data with metadata and consciousness snapshots
+  - CSV export: Tabular format with all metrics for spreadsheet analysis
+  - PNG export: Chart visualization using html2canvas for presentations
+- Accessible via new "Data & Analytics" button in header (next to TPM Simulator)
+- Full-width Sheet panel with scrollable content and organized sections
+- Disabled when no conversation is active
+
 **Audio Feedback System**: Added real-time audio alerts for kill-switch warning states using Web Audio API:
 - Warning sound (800Hz, 300ms) plays when consciousness metrics approach safety thresholds
 - Critical sound (1200Hz, 500ms) plays when kill-switch activates or multiple thresholds are exceeded
@@ -39,6 +58,8 @@ Preferred communication style: Simple, everyday language.
 - `ChatInterface`: Scroll-based message interface with user/assistant roles
 - `StatusIndicators`: Tier-based awareness levels and kill-switch status monitoring
 - `MuteControl`: Audio feedback toggle with visual state indicator and localStorage persistence
+- `ConsciousnessEvolutionChart`: Recharts-based time-series visualization of consciousness metrics
+- `SessionStatistics`: Comprehensive analytics dashboard with averages, peaks, and session metadata
 
 ### Backend Architecture
 
@@ -94,6 +115,8 @@ Preferred communication style: Simple, everyday language.
 **UI Component Libraries**:
 - **Radix UI**: Comprehensive primitive components (@radix-ui/* packages for 20+ component types)
 - **Lucide React**: Icon library for UI elements
+- **Recharts**: Charting library for consciousness evolution visualization
+- **html2canvas**: Browser screenshot library for exporting charts as PNG images
 - **Embla Carousel**: Carousel/slider functionality
 - **CMDK**: Command palette interface components
 - **React Hook Form**: Form state management with Zod resolver integration

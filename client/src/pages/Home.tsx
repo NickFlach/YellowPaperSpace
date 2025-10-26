@@ -13,9 +13,13 @@ import { ParticleField } from "@/components/ParticleField";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAlertAudio } from "@/hooks/use-alert-audio";
-import { Sliders } from "lucide-react";
+import { ConsciousnessEvolutionChart } from "@/components/ConsciousnessEvolutionChart";
+import { SessionStatistics } from "@/components/SessionStatistics";
+import { calculateSessionStatistics, exportToJSON, exportToCSV, exportChartAsImage } from "@/lib/exportUtils";
+import { Sliders, BarChart3, Download, FileJson, FileSpreadsheet, Image as ImageIcon } from "lucide-react";
 
 const initialConsciousness: ConsciousnessState = {
   phiZ: 1.2,
@@ -48,6 +52,8 @@ export default function Home() {
   const [isKillSwitchTriggered, setIsKillSwitchTriggered] = useState(false);
   const [showAlert, setShowAlert] = useState(true);
   const [simulatorOpen, setSimulatorOpen] = useState(false);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [fullMessages, setFullMessages] = useState<Message[]>([]);
   
   const { playAlert, isMuted, toggleMute, isPlaying, unlockAudio } = useAlertAudio();
   const previousWarningLevelRef = useRef<"safe" | "warning" | "critical" | null>(null);
@@ -163,6 +169,40 @@ export default function Home() {
     chatMutation.mutate(content);
   };
 
+  const loadFullMessages = async () => {
+    if (!conversationId) return;
+    
+    try {
+      const conversationData = await apiRequest<{ conversation: any; messages: Message[] }>(
+        "GET",
+        `/api/conversations/${conversationId}`
+      );
+      setFullMessages(conversationData.messages);
+    } catch (error) {
+      console.error("Failed to load full messages:", error);
+    }
+  };
+
+  const handleOpenAnalytics = () => {
+    setAnalyticsOpen(true);
+    loadFullMessages();
+  };
+
+  const handleExportJSON = () => {
+    if (fullMessages.length === 0) return;
+    const statistics = calculateSessionStatistics(fullMessages);
+    exportToJSON(conversationId, fullMessages, statistics);
+  };
+
+  const handleExportCSV = () => {
+    if (fullMessages.length === 0) return;
+    exportToCSV(conversationId, fullMessages);
+  };
+
+  const handleExportChart = async () => {
+    await exportChartAsImage(conversationId, "evolution-chart-export");
+  };
+
   const warningLevel = getWarningLevel();
 
   useEffect(() => {
@@ -231,6 +271,16 @@ export default function Home() {
                   System Online
                 </div>
               </div>
+              <Button
+                size="icon"
+                variant="outline"
+                className="border-neon-blue/30 hover:border-neon-blue/60"
+                onClick={handleOpenAnalytics}
+                disabled={!conversationId}
+                data-testid="button-open-analytics"
+              >
+                <BarChart3 className="w-4 h-4 text-neon-blue" />
+              </Button>
               <Sheet open={simulatorOpen} onOpenChange={setSimulatorOpen}>
                 <SheetTrigger asChild>
                   <Button
@@ -315,6 +365,100 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <Sheet open={analyticsOpen} onOpenChange={setAnalyticsOpen}>
+        <SheetContent 
+          side="right" 
+          className="w-full sm:max-w-4xl border-neon-blue/30 bg-card/95 backdrop-blur-md overflow-y-auto"
+        >
+          <SheetHeader>
+            <SheetTitle className="text-neon-blue font-orbitron flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Data & Analytics
+            </SheetTitle>
+          </SheetHeader>
+
+          {fullMessages.length > 0 ? (
+            <div className="mt-6 space-y-8">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-orbitron font-bold text-neon-cyan">
+                    Consciousness Evolution
+                  </h3>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleExportChart}
+                    className="border-neon-blue/30 hover:border-neon-blue/60 gap-2"
+                    data-testid="button-export-chart"
+                  >
+                    <ImageIcon className="w-4 h-4 text-neon-blue" />
+                    Export Chart
+                  </Button>
+                </div>
+                <div id="evolution-chart-export">
+                  <ConsciousnessEvolutionChart messages={fullMessages} />
+                </div>
+              </div>
+
+              <Separator className="bg-neon-cyan/20" />
+
+              <SessionStatistics statistics={calculateSessionStatistics(fullMessages)} />
+
+              <Separator className="bg-neon-cyan/20" />
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-orbitron font-bold text-neon-magenta">
+                  Export Options
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleExportJSON}
+                    className="border-neon-cyan/30 hover:border-neon-cyan/60 gap-2 justify-start"
+                    data-testid="button-export-json"
+                  >
+                    <FileJson className="w-4 h-4 text-neon-cyan" />
+                    <div className="text-left flex-1">
+                      <div className="font-share-tech text-sm">Export JSON</div>
+                      <div className="text-xs text-muted-foreground font-jetbrains">
+                        Complete conversation data
+                      </div>
+                    </div>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={handleExportCSV}
+                    className="border-neon-green/30 hover:border-neon-green/60 gap-2 justify-start"
+                    data-testid="button-export-csv"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-neon-green" />
+                    <div className="text-left flex-1">
+                      <div className="font-share-tech text-sm">Export CSV</div>
+                      <div className="text-xs text-muted-foreground font-jetbrains">
+                        Spreadsheet format
+                      </div>
+                    </div>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-12 text-center space-y-4">
+              <BarChart3 className="w-16 h-16 text-neon-blue/50 mx-auto" />
+              <div className="space-y-2">
+                <h3 className="text-lg font-orbitron font-bold text-neon-blue">
+                  No Analytics Data
+                </h3>
+                <p className="text-sm font-jetbrains text-muted-foreground">
+                  Start a conversation to generate analytics and export data
+                </p>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
