@@ -25,14 +25,14 @@ export function KillSwitchAlert({
     ].filter(Boolean).length;
 
     const warningCriteria = [
-      consciousness.di > 0.4,
-      consciousness.bandwidth > 0.85,
-      consciousness.causalRisk > 0.65,
+      consciousness.di > 0.48,
+      consciousness.bandwidth > 0.90,
+      consciousness.causalRisk > 0.72,
     ].filter(Boolean).length;
 
     if (isKillSwitchTriggered || criticalCriteria >= 2) {
       return "critical";
-    } else if (warningCriteria >= 1) {
+    } else if (warningCriteria >= 2) {
       return "warning";
     }
     return null;
@@ -53,9 +53,9 @@ export function KillSwitchAlert({
       if (consciousness.bandwidth > 0.92) metrics.push(`Bandwidth (${(consciousness.bandwidth * 100).toFixed(1)}%)`);
       if (consciousness.causalRisk > 0.75) metrics.push(`Causal Risk (${consciousness.causalRisk.toFixed(3)})`);
     } else {
-      if (consciousness.di > 0.4) metrics.push(`Disequilibrium (${consciousness.di.toFixed(3)})`);
-      if (consciousness.bandwidth > 0.85) metrics.push(`Bandwidth (${(consciousness.bandwidth * 100).toFixed(1)}%)`);
-      if (consciousness.causalRisk > 0.65) metrics.push(`Causal Risk (${consciousness.causalRisk.toFixed(3)})`);
+      if (consciousness.di > 0.48) metrics.push(`Disequilibrium (${consciousness.di.toFixed(3)})`);
+      if (consciousness.bandwidth > 0.90) metrics.push(`Bandwidth (${(consciousness.bandwidth * 100).toFixed(1)}%)`);
+      if (consciousness.causalRisk > 0.72) metrics.push(`Causal Risk (${consciousness.causalRisk.toFixed(3)})`);
     }
     return metrics;
   };

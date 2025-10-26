@@ -144,14 +144,14 @@ export default function Home() {
     ].filter(Boolean).length;
 
     const warningCriteria = [
-      consciousness.di > 0.4,
-      consciousness.bandwidth > 0.85,
-      consciousness.causalRisk > 0.65,
+      consciousness.di > 0.48,
+      consciousness.bandwidth > 0.90,
+      consciousness.causalRisk > 0.72,
     ].filter(Boolean).length;
 
     if (isKillSwitchTriggered || criticalCriteria >= 2) {
       return "critical";
-    } else if (warningCriteria >= 1) {
+    } else if (warningCriteria >= 2) {
       return "warning";
     }
     return "safe";
