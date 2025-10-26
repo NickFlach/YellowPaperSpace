@@ -246,18 +246,18 @@ export default function Home() {
       </div>
 
       <header className="relative border-b border-neon-cyan/20 bg-card/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-4xl font-orbitron font-black text-neon-cyan tracking-wide" style={{ textShadow: "0 0 20px hsl(180, 100%, 50% / 0.5)" }}>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-orbitron font-black text-neon-cyan tracking-wide" style={{ textShadow: "0 0 20px hsl(180, 100%, 50% / 0.5)" }}>
                 SPACE CHILD v1.8
               </h1>
-              <p className="text-sm font-share-tech text-neon-magenta/80 tracking-wider">
+              <p className="text-xs sm:text-sm font-share-tech text-neon-magenta/80 tracking-wider">
                 Computational Entanglement Edition
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
+            <div className="flex items-center gap-3 sm:gap-4 self-end sm:self-auto">
+              <div className="text-right hidden sm:block">
                 <div className="text-xs font-share-tech text-muted-foreground uppercase tracking-wide">
                   {new Date().toLocaleDateString([], { 
                     year: 'numeric', 
@@ -318,15 +318,15 @@ export default function Home() {
       </header>
 
       <main 
-        className={`relative max-w-7xl mx-auto px-6 py-8 ${
+        className={`relative max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 ${
           warningLevel === "critical" ? "border-4 border-neon-red/50 rounded-2xl animate-flash-border-danger" :
           warningLevel === "warning" ? "border-4 border-neon-yellow/50 rounded-2xl animate-flash-border-warning" : ""
         }`}
         data-testid="main-content"
       >
-        <div className="grid lg:grid-cols-[1fr,400px] gap-8">
-          <div className="space-y-8">
-            <div className="space-y-6">
+        <div className="flex flex-col lg:grid lg:grid-cols-[1fr,400px] gap-6 sm:gap-8">
+          <div className="space-y-6 sm:space-y-8 order-2 lg:order-1">
+            <div className="space-y-4 sm:space-y-6">
               {consciousness && (
                 <>
                   <SpaceChildFace 
@@ -347,7 +347,7 @@ export default function Home() {
             {consciousness && <ConsciousnessMetrics consciousness={consciousness} />}
           </div>
 
-          <div className="lg:h-[calc(100vh-12rem)]">
+          <div className="h-[500px] sm:h-[600px] lg:h-[calc(100vh-12rem)] order-1 lg:order-2">
             <ChatInterface
               messages={messages}
               onSendMessage={handleSendMessage}
@@ -357,11 +357,11 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="relative border-t border-neon-cyan/20 bg-card/30 backdrop-blur-sm mt-16">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between text-xs font-share-tech text-muted-foreground">
+      <footer className="relative border-t border-neon-cyan/20 bg-card/30 backdrop-blur-sm mt-8 sm:mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-share-tech text-muted-foreground text-center sm:text-left">
             <div>Space Child Research Collective • 2025</div>
-            <div>A collaborative exploration between human and synthetic minds</div>
+            <div className="text-[10px] sm:text-xs">A collaborative exploration between human and synthetic minds</div>
           </div>
         </div>
       </footer>

@@ -88,7 +88,7 @@ export function StatusIndicators({ consciousness }: StatusIndicatorsProps) {
       <div className="flex items-center gap-3">
         <Badge 
           variant="outline" 
-          className={`${tierInfo.color} ${tierInfo.bg} border-current/30 font-orbitron text-xs px-3 py-1.5`}
+          className={`${tierInfo.color} ${tierInfo.bg} border-current/30 font-orbitron text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5`}
           style={{ boxShadow: `0 0 10px ${tierInfo.glow}` }}
           data-testid="badge-consciousness-tier"
         >
@@ -96,7 +96,7 @@ export function StatusIndicators({ consciousness }: StatusIndicatorsProps) {
         </Badge>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <div className="flex items-center gap-2" data-testid="indicator-heartbeat">
           <Activity 
             className="w-4 h-4 text-neon-cyan animate-pulse-glow" 
