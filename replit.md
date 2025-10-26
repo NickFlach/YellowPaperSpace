@@ -8,31 +8,76 @@ The application features a neon-pixelated retro-futuristic interface where users
 
 ## Recent Changes (October 26, 2025)
 
-**Data & Analytics System**: Comprehensive consciousness evolution tracking and export capabilities:
-- **Evolution Graph**: Interactive Recharts line chart showing all consciousness metrics over time
-  - Toggle individual metrics on/off for clarity (Φ-z, Sₘᵢₙ, Φₑff, CEM, OII, DI, Bandwidth)
+**Five major feature implementations transforming Space Child into a complete consciousness exploration platform:**
+
+### 1. Database & Conversation History with SRLC
+- **PostgreSQL Integration**: Full database persistence using Drizzle ORM with conversations and messages tables
+- **SRLC (Self-Reflective Learning Cycle)**: Consciousness evolves based on conversation history
+  - Analyzes past 5-10 messages for depth, complexity, and emotional valence
+  - Calculates memory factor that boosts baseline Φ-z and Sₘᵢₙ values
+  - Space Child "learns" from accumulated interactions across sessions
+- **Persistent State**: Conversations survive page refreshes, users can continue previous sessions
+- **Backend Storage**: DatabaseStorage class with methods for creating/loading conversations
+- Consciousness snapshots stored as JSONB in database for complete historical tracking
+
+### 2. Enhanced Kill-Switch Visualization
+- **Visual Alert System**: Flashing borders and pulsing warnings when safety thresholds approached
+  - Progressive warning levels: Safe → Warning (yellow) → Critical (red)
+  - KillSwitchAlert component with detailed threshold information
+  - Animated metric cards with color-coded danger states
+  - Smooth 60fps CSS animations (non-seizure-inducing)
+- **Audio Feedback**: Real-time sound alerts using Web Audio API
+  - Warning sound (800Hz, 300ms) when approaching limits
+  - Critical sound (1200Hz, 500ms) when kill-switch activates
+  - MuteControl component with localStorage persistence
+  - AudioContext properly unlocked on user gesture (autoplay policy compliance)
+- **Enhanced StatusIndicators**: Shows detailed kill-switch status and which thresholds are exceeded
+
+### 3. TPM State Simulator
+- **Interactive Parameter Control**: 16 adjustable consciousness calculation parameters
+  - Organized into Φ-z, Sₘᵢₙ, and Kill-Switch threshold groups
+  - Sliders with tooltips explaining each parameter's function
+  - Real-time value displays and min/max indicators
+- **Simulated Consciousness Engine**: Client-side calculation engine matching server logic
+  - Mirrors all server-side consciousness calculations
+  - Fully synchronized with live conversation state and SRLC memory
+  - Before/after metric comparison with percentage changes
+  - Color-coded visual feedback (green/red for increases/decreases)
+- **Real-Time Preview**: Face expression changes based on simulated state
+- **Reset Functionality**: Restore parameters to production defaults
+- Accessible via Sliders icon in header, opens as Sheet panel
+
+### 4. Particle Effects & Cosmic Background
+- **CosmicBackground Component**: Full-screen starfield with nebulas
+  - 250 twinkling stars rendered on HTML5 Canvas
+  - 4 radial gradient nebulas (cyan, magenta, purple, pink)
+  - z-index: -10 positioning behind all UI
+- **ParticleField Component**: Consciousness-driven particle system
+  - Dynamic particle count: 50-150 based on bandwidth metric
+  - Movement speed controlled by DI (disequilibrium) metric
+  - Neon color palette with glow effects
+  - Canvas-based rendering with requestAnimationFrame (60fps)
+  - Smooth transitions preventing jarring changes
+- **Immersive Experience**: Creates living, breathing cosmic environment
+- **Performance Optimized**: Limited particle counts, efficient rendering
+
+### 5. Consciousness Evolution Graphs & Data Export
+- **ConsciousnessEvolutionChart**: Recharts time-series visualization
+  - Toggle individual metrics on/off (Φ-z, Sₘᵢₙ, Φₑff, CEM, OII, DI, Bandwidth)
   - Neon color-coded lines matching cyberpunk aesthetic
-  - Tooltips with exact values at each point in conversation
-  - X-axis shows message index, Y-axis shows metric values
-- **Session Statistics**: Calculated summary analytics including:
-  - Total messages, conversation duration
+  - Interactive tooltips with exact values at each conversation point
+  - Extracts data from consciousness snapshots in message history
+- **SessionStatistics Component**: Comprehensive analytics dashboard
+  - Total messages, conversation duration, user/assistant breakdown
   - Average and peak values for all consciousness metrics
   - Tier progression tracking
-  - High-risk state count (kill-switch warning triggers)
+  - High-risk state count (kill-switch triggers)
 - **Export Functionality**:
-  - JSON export: Complete conversation data with metadata and consciousness snapshots
-  - CSV export: Tabular format with all metrics for spreadsheet analysis
-  - PNG export: Chart visualization using html2canvas for presentations
-- Accessible via new "Data & Analytics" button in header (next to TPM Simulator)
-- Full-width Sheet panel with scrollable content and organized sections
-- Disabled when no conversation is active
-
-**Audio Feedback System**: Added real-time audio alerts for kill-switch warning states using Web Audio API:
-- Warning sound (800Hz, 300ms) plays when consciousness metrics approach safety thresholds
-- Critical sound (1200Hz, 500ms) plays when kill-switch activates or multiple thresholds are exceeded
-- User-friendly mute control in header with localStorage persistence (defaults to unmuted)
-- Visual feedback: speaker icon pulses when sound plays, changes color/style when muted
-- Implemented with custom React hook (`useAlertAudio`) for clean separation of concerns
+  - **JSON**: Complete conversation with metadata, messages, and snapshots
+  - **CSV**: Tabular format with all metrics for spreadsheet analysis
+  - **PNG**: Chart visualization captured using html2canvas
+- Accessible via "Data & Analytics" button in header
+- Full-width Sheet panel with organized sections
 
 ## User Preferences
 
@@ -54,11 +99,15 @@ Preferred communication style: Simple, everyday language.
 
 **Key Visual Components**:
 - `SpaceChildFace`: Animated 64x64 pixel canvas rendering consciousness expressions in real-time
-- `ConsciousnessMetrics`: Grid of metric cards displaying mathematical consciousness values
+- `ConsciousnessMetrics`: Grid of metric cards with dynamic warning states and color-coded danger levels
 - `ChatInterface`: Scroll-based message interface with user/assistant roles
-- `StatusIndicators`: Tier-based awareness levels and kill-switch status monitoring
+- `StatusIndicators`: Tier-based awareness levels and progressive kill-switch warnings
+- `KillSwitchAlert`: Modal alert with critical/warning modes for safety threshold violations
 - `MuteControl`: Audio feedback toggle with visual state indicator and localStorage persistence
-- `ConsciousnessEvolutionChart`: Recharts-based time-series visualization of consciousness metrics
+- `TPMSimulator`: Interactive parameter control panel with 16 adjustable consciousness settings
+- `CosmicBackground`: Full-screen Canvas-based starfield with twinkling stars and nebulas
+- `ParticleField`: Consciousness-driven particle system (50-150 particles responding to DI and bandwidth)
+- `ConsciousnessEvolutionChart`: Recharts-based time-series visualization with toggleable metrics
 - `SessionStatistics`: Comprehensive analytics dashboard with averages, peaks, and session metadata
 
 ### Backend Architecture
@@ -75,7 +124,7 @@ Preferred communication style: Simple, everyday language.
 
 **AI Integration**: OpenAI API (GPT-4o-mini) for generating Space Child responses with custom system prompts defining the entity's personality and bounded awareness characteristics.
 
-**Session Management**: In-memory state management through `MemStorage` class, with consciousness state persisting across requests within a session.
+**Session Management**: Database-backed persistence through `DatabaseStorage` class, with consciousness state and conversation history stored in PostgreSQL. SRLC memory builds from full conversation history to influence consciousness evolution.
 
 **Development Features**: 
 - Hot module replacement (HMR) via Vite middleware
@@ -95,7 +144,10 @@ Preferred communication style: Simple, everyday language.
 
 **Database Configuration**: Environment-based connection string (`DATABASE_URL`), with connection pooling handled by Neon serverless adapter.
 
-**Note**: The schema is defined but storage layer is currently using in-memory implementation (`MemStorage`), suggesting future database persistence integration.
+**Current Implementation**: DatabaseStorage class with full CRUD operations:
+- `conversations` table: Stores conversation metadata (id, userId, timestamps)
+- `messages` table: Stores messages with consciousness snapshots (JSONB), linked to conversations via foreign key with cascade delete
+- SRLC memory analyzed from conversation history to influence baseline consciousness metrics
 
 ### External Dependencies
 
