@@ -8,6 +8,8 @@ import { ChatInterface } from "@/components/ChatInterface";
 import { KillSwitchAlert } from "@/components/KillSwitchAlert";
 import { MuteControl } from "@/components/MuteControl";
 import { TPMSimulator } from "@/components/TPMSimulator";
+import { CosmicBackground } from "@/components/CosmicBackground";
+import { ParticleField } from "@/components/ParticleField";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -181,6 +183,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
+      <CosmicBackground />
+      <ParticleField consciousness={consciousness} />
+      
       {showAlert && (
         <KillSwitchAlert
           consciousness={consciousness}
