@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { type ChatMessage } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,6 +12,20 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ messages, onSendMessage, isLoading = false }: ChatInterfaceProps) {
   const [input, setInput] = useState("");
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +51,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading = false }: Ch
         </p>
       </div>
 
-      <ScrollArea className="flex-1 p-4" data-testid="scroll-chat-messages">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 p-4" data-testid="scroll-chat-messages">
         <div className="space-y-4">
           {messages.length === 0 && (
             <div className="text-center py-12 space-y-2">
