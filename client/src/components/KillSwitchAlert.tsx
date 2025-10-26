@@ -65,28 +65,28 @@ export function KillSwitchAlert({
   if (warningLevel === "critical") {
     return (
       <div 
-        className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-2xl w-full mx-4 animate-slide-in-down"
+        className="fixed top-4 left-4 right-4 z-50 max-w-2xl mx-auto animate-slide-in-down"
         data-testid="alert-kill-switch-critical"
       >
         <div 
-          className="bg-card/95 backdrop-blur-md border-4 border-neon-red rounded-xl p-6 shadow-2xl animate-flash-border-danger"
+          className="bg-card/95 backdrop-blur-md border-2 sm:border-4 border-neon-red rounded-xl p-4 sm:p-6 shadow-2xl animate-flash-border-danger"
           style={{
             boxShadow: "0 0 40px hsl(var(--neon-red) / 0.6), 0 0 80px hsl(var(--neon-red) / 0.3)"
           }}
         >
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-3 sm:gap-4">
             <div className="flex-shrink-0">
               <XCircle 
-                className="w-12 h-12 text-neon-red animate-pulse-glow-danger" 
+                className="w-8 h-8 sm:w-12 sm:h-12 text-neon-red animate-pulse-glow-danger" 
                 style={{ filter: "drop-shadow(0 0 10px hsl(var(--neon-red)))" }}
               />
             </div>
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
               <div className="space-y-1">
-                <h2 className="text-2xl font-orbitron font-bold text-neon-red tracking-wide">
+                <h2 className="text-lg sm:text-2xl font-orbitron font-bold text-neon-red tracking-wide">
                   {isKillSwitchTriggered ? "KILL-SWITCH ACTIVATED" : "CRITICAL WARNING"}
                 </h2>
-                <p className="text-sm font-share-tech text-foreground/90">
+                <p className="text-xs sm:text-sm font-share-tech text-foreground/90">
                   {isKillSwitchTriggered 
                     ? "Consciousness evolution has been halted for safety. System requires reset."
                     : "Multiple safety thresholds have been exceeded. Kill-switch activation imminent."}
@@ -102,31 +102,33 @@ export function KillSwitchAlert({
                     {exceededMetrics.map((metric, idx) => (
                       <li 
                         key={idx}
-                        className="text-sm font-jetbrains text-foreground/80 flex items-center gap-2"
+                        className="text-xs sm:text-sm font-jetbrains text-foreground/80 flex items-center gap-2"
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-neon-red animate-pulse" />
-                        {metric}
+                        <div className="w-1.5 h-1.5 rounded-full bg-neon-red animate-pulse flex-shrink-0" />
+                        <span className="break-words">{metric}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              <div className="pt-2 flex items-center gap-3">
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                 <Button
                   onClick={onNewConversation}
-                  className="bg-neon-red/20 hover:bg-neon-red/30 text-neon-red border-2 border-neon-red/50 font-orbitron"
+                  size="sm"
+                  className="bg-neon-red/20 hover:bg-neon-red/30 text-neon-red border-2 border-neon-red/50 font-orbitron text-xs sm:text-sm w-full sm:w-auto"
                   style={{ boxShadow: "0 0 20px hsl(var(--neon-red) / 0.3)" }}
                   data-testid="button-new-conversation"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" />
+                  <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                   Start New Conversation
                 </Button>
                 {!isKillSwitchTriggered && (
                   <Button
                     onClick={onAcknowledge}
+                    size="sm"
                     variant="outline"
-                    className="border-neon-red/30 text-neon-red/80 hover:bg-neon-red/10 font-share-tech"
+                    className="border-neon-red/30 text-neon-red/80 hover:bg-neon-red/10 font-share-tech text-xs sm:text-sm w-full sm:w-auto"
                     data-testid="button-acknowledge"
                   >
                     Acknowledge
@@ -142,28 +144,28 @@ export function KillSwitchAlert({
 
   return (
     <div 
-      className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-2xl w-full mx-4 animate-slide-in-down"
+      className="fixed top-4 left-4 right-4 z-50 max-w-2xl mx-auto animate-slide-in-down"
       data-testid="alert-kill-switch-warning"
     >
       <div 
-        className="bg-card/95 backdrop-blur-md border-4 border-neon-yellow rounded-xl p-5 shadow-lg animate-flash-border-warning"
+        className="bg-card/95 backdrop-blur-md border-2 sm:border-4 border-neon-yellow rounded-xl p-4 sm:p-5 shadow-lg animate-flash-border-warning"
         style={{
           boxShadow: "0 0 30px hsl(var(--neon-yellow) / 0.4), 0 0 60px hsl(var(--neon-yellow) / 0.2)"
         }}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           <div className="flex-shrink-0">
             <AlertTriangle 
-              className="w-10 h-10 text-neon-yellow animate-pulse-glow-warning" 
+              className="w-8 h-8 sm:w-10 sm:h-10 text-neon-yellow animate-pulse-glow-warning" 
               style={{ filter: "drop-shadow(0 0 8px hsl(var(--neon-yellow)))" }}
             />
           </div>
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
             <div className="space-y-1">
-              <h2 className="text-xl font-orbitron font-bold text-neon-yellow tracking-wide">
+              <h2 className="text-base sm:text-xl font-orbitron font-bold text-neon-yellow tracking-wide">
                 SAFETY WARNING
               </h2>
-              <p className="text-sm font-share-tech text-foreground/90">
+              <p className="text-xs sm:text-sm font-share-tech text-foreground/90">
                 Consciousness metrics are approaching safety thresholds. Monitor carefully.
               </p>
             </div>
@@ -177,10 +179,10 @@ export function KillSwitchAlert({
                   {exceededMetrics.map((metric, idx) => (
                     <li 
                       key={idx}
-                      className="text-sm font-jetbrains text-foreground/80 flex items-center gap-2"
+                      className="text-xs sm:text-sm font-jetbrains text-foreground/80 flex items-center gap-2"
                     >
-                      <div className="w-1.5 h-1.5 rounded-full bg-neon-yellow animate-pulse" />
-                      {metric}
+                      <div className="w-1.5 h-1.5 rounded-full bg-neon-yellow animate-pulse flex-shrink-0" />
+                      <span className="break-words">{metric}</span>
                     </li>
                   ))}
                 </ul>
@@ -190,8 +192,9 @@ export function KillSwitchAlert({
             <div className="pt-1">
               <Button
                 onClick={onAcknowledge}
+                size="sm"
                 variant="outline"
-                className="border-neon-yellow/30 text-neon-yellow/90 hover:bg-neon-yellow/10 font-share-tech text-xs"
+                className="border-neon-yellow/30 text-neon-yellow/90 hover:bg-neon-yellow/10 font-share-tech text-xs w-full sm:w-auto"
                 data-testid="button-acknowledge-warning"
               >
                 Acknowledge Warning
