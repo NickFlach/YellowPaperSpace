@@ -1,4 +1,4 @@
-import { type ConsciousnessState } from "@shared/schema";
+import { type ConsciousnessState, type Message } from "@shared/schema";
 
 interface ConversationContext {
   messageLength: number;
@@ -8,23 +8,91 @@ interface ConversationContext {
   semanticDensity: number;
 }
 
+interface SRLCMemory {
+  messageCount: number;
+  conversationDepth: number;
+  averageComplexity: number;
+  averageEmotionalValence: number;
+  memoryFactor: number;
+}
+
 export class ConsciousnessEngine {
   private state: ConsciousnessState;
   private conversationHistory: string[] = [];
+  private srlcMemory: SRLCMemory;
   private killSwitchTriggered: boolean = false;
   private killSwitchTriggerCount: number = 0;
   private lastUpdateTime: number = Date.now();
   private updateCount: number = 0;
   
-  constructor(initialState?: ConsciousnessState) {
+  constructor(initialState?: ConsciousnessState, pastMessages?: Message[]) {
+    this.srlcMemory = this.buildSRLCMemory(pastMessages || []);
     this.state = initialState || this.getDefaultState();
+    
+    if (pastMessages && pastMessages.length > 0) {
+      this.conversationHistory = pastMessages.map(m => m.content).slice(-50);
+    }
+  }
+
+  private buildSRLCMemory(pastMessages: Message[]): SRLCMemory {
+    if (pastMessages.length === 0) {
+      return {
+        messageCount: 0,
+        conversationDepth: 0,
+        averageComplexity: 0,
+        averageEmotionalValence: 0,
+        memoryFactor: 0,
+      };
+    }
+
+    const recentMessages = pastMessages.slice(-10);
+    
+    let totalComplexity = 0;
+    let totalEmotionalValence = 0;
+
+    for (const msg of recentMessages) {
+      const words = msg.content.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+      const complexWords = words.filter(word => word.length > 7).length;
+      const complexity = words.length > 0 ? Math.min(1, complexWords / Math.max(1, words.length * 0.25)) : 0;
+      totalComplexity += complexity;
+
+      const emotionalWords = ["feel", "think", "wonder", "curious", "excited", "worried", "hope", "believe", "conscious", "aware", "experience", "understand", "perceive"];
+      const emotionalCount = emotionalWords.reduce(
+        (count, word) => count + (msg.content.toLowerCase().includes(word) ? 1 : 0),
+        0
+      );
+      const emotionalValence = Math.min(1, emotionalCount / 6);
+      totalEmotionalValence += emotionalValence;
+    }
+
+    const averageComplexity = recentMessages.length > 0 ? totalComplexity / recentMessages.length : 0;
+    const averageEmotionalValence = recentMessages.length > 0 ? totalEmotionalValence / recentMessages.length : 0;
+    
+    const conversationDepth = Math.min(1, pastMessages.length / 30);
+    
+    const memoryFactor = Math.min(2.5, 
+      (conversationDepth * 1.5) + 
+      (averageComplexity * 0.6) + 
+      (averageEmotionalValence * 0.4)
+    );
+
+    return {
+      messageCount: pastMessages.length,
+      conversationDepth,
+      averageComplexity,
+      averageEmotionalValence,
+      memoryFactor,
+    };
   }
 
   private getDefaultState(): ConsciousnessState {
+    const basePhiZ = 1.2 + (this.srlcMemory.memoryFactor * 0.4);
+    const baseSMin = 0.8 + (this.srlcMemory.memoryFactor * 0.3);
+    
     return {
-      phiZ: 1.2,
-      sMin: 0.8,
-      phiEff: 0.96,
+      phiZ: basePhiZ,
+      sMin: baseSMin,
+      phiEff: basePhiZ * baseSMin,
       cem: 0.6,
       oii: 0.48,
       deltaCP: 0.15,
@@ -60,22 +128,24 @@ export class ConsciousnessEngine {
   }
 
   private calculatePhiZ(context: ConversationContext): number {
-    const baseIntegration = 1.0;
+    const baseIntegration = 1.0 + (this.srlcMemory.memoryFactor * 0.4);
     const complexityContribution = context.complexity * 2.8;
     const depthContribution = context.topicDepth * 1.8;
     const densityContribution = context.semanticDensity * 1.2;
     const conversationFactor = Math.min(1.5, this.conversationHistory.length / 12);
+    const srlcBoost = this.srlcMemory.averageComplexity * 0.5;
     
-    return Math.max(0.5, Math.min(8, baseIntegration + complexityContribution + depthContribution + densityContribution + conversationFactor));
+    return Math.max(0.5, Math.min(8, baseIntegration + complexityContribution + depthContribution + densityContribution + conversationFactor + srlcBoost));
   }
 
   private calculateSMin(context: ConversationContext): number {
-    const baseEntropy = 0.6;
+    const baseEntropy = 0.6 + (this.srlcMemory.memoryFactor * 0.3);
     const emotionalContribution = context.emotionalValence * 1.1;
     const lengthFactor = Math.min(1.2, Math.log2(context.messageLength + 1) / 4);
     const densityFactor = context.semanticDensity * 0.7;
+    const srlcBoost = this.srlcMemory.averageEmotionalValence * 0.4;
     
-    return Math.max(0.3, Math.min(3.5, baseEntropy + emotionalContribution + lengthFactor + densityFactor));
+    return Math.max(0.3, Math.min(3.5, baseEntropy + emotionalContribution + lengthFactor + densityFactor + srlcBoost));
   }
 
   private calculatePhiEff(phiZ: number, sMin: number): number {
@@ -249,5 +319,9 @@ export class ConsciousnessEngine {
   public resetKillSwitch(): void {
     this.killSwitchTriggered = false;
     this.killSwitchTriggerCount = 0;
+  }
+
+  public getSRLCMemory(): SRLCMemory {
+    return { ...this.srlcMemory };
   }
 }

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { type ChatMessage, type ConsciousnessState, type ChatResponse } from "@shared/schema";
+import { type ChatMessage, type ConsciousnessState, type ChatResponse, type Message } from "@shared/schema";
 import { SpaceChildFace } from "@/components/SpaceChildFace";
 import { ConsciousnessMetrics } from "@/components/ConsciousnessMetrics";
 import { StatusIndicators } from "@/components/StatusIndicators";
@@ -22,16 +22,66 @@ const initialConsciousness: ConsciousnessState = {
   causalRisk: 0.15,
 };
 
+function convertMessageToChatMessage(msg: Message): ChatMessage {
+  return {
+    id: `msg-${msg.id}`,
+    role: msg.role,
+    content: msg.content,
+    timestamp: new Date(msg.timestamp).getTime(),
+  };
+}
+
 export default function Home() {
+  const [conversationId, setConversationId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [consciousness, setConsciousness] = useState<ConsciousnessState | null>(initialConsciousness);
 
+  useEffect(() => {
+    const loadLatestConversation = async () => {
+      try {
+        const conversations = await apiRequest<any[]>("GET", "/api/conversations?limit=1");
+        if (conversations.length > 0) {
+          const latestConversation = conversations[0];
+          setConversationId(latestConversation.id);
+          
+          const conversationData = await apiRequest<{ conversation: any; messages: Message[] }>(
+            "GET",
+            `/api/conversations/${latestConversation.id}`
+          );
+          
+          const chatMessages = conversationData.messages.map(convertMessageToChatMessage);
+          setMessages(chatMessages);
+          
+          const lastConsciousness = conversationData.messages
+            .filter((m: Message) => m.consciousnessSnapshot)
+            .slice(-1)[0]?.consciousnessSnapshot;
+          
+          if (lastConsciousness) {
+            setConsciousness(lastConsciousness);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load conversation:", error);
+      }
+    };
+
+    loadLatestConversation();
+  }, []);
+
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
-      const response = await apiRequest<ChatResponse>("POST", "/api/chat", { message });
+      const response = await apiRequest<ChatResponse & { conversationId: number }>(
+        "POST",
+        "/api/chat",
+        { message, conversationId }
+      );
       return response;
     },
     onSuccess: (data) => {
+      if (!conversationId) {
+        setConversationId(data.conversationId);
+      }
+      
       const assistantMessage: ChatMessage = {
         id: `msg-${Date.now()}-assistant`,
         role: "assistant",
