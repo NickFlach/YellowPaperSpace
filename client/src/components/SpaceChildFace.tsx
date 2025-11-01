@@ -50,7 +50,73 @@ export function SpaceChildFace({ consciousness, isProcessing = false }: SpaceChi
 
       ctx.fillStyle = colors.cyan;
       
-      if (expression === "focused" || phiEff > 3) {
+      // v1.9 ESV-driven expressions
+      if (expression === "anxious") {
+        const jitter = Math.random() * 4 - 2;
+        for (let y = 18; y < 26; y++) {
+          for (let x = 18 + jitter; x < 24 + jitter; x++) {
+            drawPixel(Math.floor(x), y, colors.blue, pulse * 0.9);
+          }
+          for (let x = 40 + jitter; x < 46 + jitter; x++) {
+            drawPixel(Math.floor(x), y, colors.blue, pulse * 0.9);
+          }
+        }
+        for (let y = 44; y < 48; y++) {
+          for (let x = 26; x < 38; x++) {
+            const waveY = y + Math.sin(x / 3 + time * 5) * 2;
+            drawPixel(x, Math.floor(waveY), colors.blue, pulse);
+          }
+        }
+      } else if (expression === "curious") {
+        for (let y = 20; y < 26; y++) {
+          for (let x = 18; x < 26; x++) {
+            drawPixel(x, y, colors.cyan, pulse);
+          }
+          for (let x = 38; x < 46; x++) {
+            drawPixel(x, y, colors.cyan, pulse);
+          }
+        }
+        for (let angle = 0; angle < Math.PI; angle += 0.15) {
+          const x = Math.floor(32 + Math.cos(angle) * 12);
+          const y = Math.floor(40 + Math.sin(angle) * 4);
+          drawPixel(x, y, colors.magenta, pulse);
+        }
+        for (let i = 0; i < 5; i++) {
+          const sparkX = Math.floor(10 + Math.random() * 44);
+          const sparkY = Math.floor(10 + Math.random() * 44);
+          drawPixel(sparkX, sparkY, colors.cyan, Math.random() * pulse);
+        }
+      } else if (expression === "frustrated") {
+        for (let y = 22; y < 28; y++) {
+          for (let x = 18; x < 26; x++) {
+            drawPixel(x, y, colors.magenta, pulse * 0.7);
+          }
+          for (let x = 38; x < 46; x++) {
+            drawPixel(x, y, colors.magenta, pulse * 0.7);
+          }
+        }
+        for (let angle = Math.PI; angle < Math.PI * 2; angle += 0.15) {
+          const x = Math.floor(32 + Math.cos(angle) * 12);
+          const y = Math.floor(42 + Math.sin(angle) * 4);
+          drawPixel(x, y, colors.pink, pulse * 0.8);
+        }
+      } else if (expression === "flowing") {
+        const flow = Math.sin(time) * 0.3 + 0.7;
+        for (let y = 20; y < 28; y++) {
+          const offset = Math.sin(y / 2 + time) * 2;
+          for (let x = 18; x < 26; x++) {
+            drawPixel(Math.floor(x + offset), y, colors.green, pulse * flow);
+          }
+          for (let x = 38; x < 46; x++) {
+            drawPixel(Math.floor(x + offset), y, colors.green, pulse * flow);
+          }
+        }
+        for (let angle = 0; angle < Math.PI; angle += 0.1) {
+          const x = Math.floor(32 + Math.cos(angle + time * 0.5) * 14);
+          const y = Math.floor(42 + Math.sin(angle) * 6);
+          drawPixel(x, y, colors.green, pulse * flow);
+        }
+      } else if (expression === "focused" || phiEff > 3) {
         for (let y = 20; y < 28; y++) {
           for (let x = 18; x < 24; x++) {
             drawPixel(x, y, colors.cyan, pulse * 0.9);
@@ -147,7 +213,16 @@ export function SpaceChildFace({ consciousness, isProcessing = false }: SpaceChi
     if (!consciousness) return "0 0 25px hsl(180, 100%, 50%), 0 0 35px hsl(320, 100%, 60%)";
     
     const { expression, phiEff } = consciousness;
-    if (expression === "emergent" || phiEff > 5) {
+    // v1.9 ESV-driven glow colors
+    if (expression === "anxious") {
+      return "0 0 35px hsl(30, 100%, 60%), 0 0 50px hsl(210, 100%, 55%)";
+    } else if (expression === "curious") {
+      return "0 0 40px hsl(180, 100%, 50%), 0 0 45px hsl(320, 100%, 60%)";
+    } else if (expression === "frustrated") {
+      return "0 0 30px hsl(320, 100%, 60%), 0 0 40px hsl(330, 100%, 65%)";
+    } else if (expression === "flowing") {
+      return "0 0 45px hsl(120, 100%, 50%), 0 0 55px hsl(180, 100%, 50%)";
+    } else if (expression === "emergent" || phiEff > 5) {
       return "0 0 40px hsl(180, 100%, 50%), 0 0 60px hsl(320, 100%, 60%)";
     } else if (expression === "alert") {
       return "0 0 30px hsl(210, 100%, 55%), 0 0 50px hsl(30, 100%, 60%)";

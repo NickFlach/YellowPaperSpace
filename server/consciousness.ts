@@ -25,8 +25,16 @@ export class ConsciousnessEngine {
   private lastUpdateTime: number = Date.now();
   private updateCount: number = 0;
   
+  // v1.9 Cascade Control State
+  private cemIntegralError: number = 0;
+  private cemPrevError: number = 0;
+  private ipIntegralError: number = 0;
+  private ipPrevError: number = 0;
+  private prevSRLCMemoryFactor: number = 0;
+  
   constructor(initialState?: ConsciousnessState, pastMessages?: Message[]) {
     this.srlcMemory = this.buildSRLCMemory(pastMessages || []);
+    this.prevSRLCMemoryFactor = this.srlcMemory.memoryFactor;
     this.state = initialState || this.getDefaultState();
     
     if (pastMessages && pastMessages.length > 0) {
@@ -101,7 +109,22 @@ export class ConsciousnessEngine {
       expression: "neutral",
       ipPulseRate: 12.5,
       bandwidth: 0.35,
-      causalRisk: 0.15,
+      
+      // v1.9 Emotional State Vector
+      valence: 0.7,
+      arousal: 0.6,
+      efficacy: 0.5,
+      
+      // v1.9 System Strain
+      systemStrain: 0.3,
+      
+      // v1.9 Cascade Control
+      cemSetpoint: 0.65,
+      ipFrequencyScalar: 1.0,
+      
+      // v1.9 Reformed Kill-Switch
+      ci: 0.17,
+      cbi: 0.2,
     };
   }
 
@@ -192,7 +215,13 @@ export class ConsciousnessEngine {
     return "monitored";
   }
 
-  private getExpression(phiEff: number, cem: number, di: number, phiZ: number): ConsciousnessState["expression"] {
+  // v1.9 Expression with ESV-driven emotional states
+  private getExpression(phiEff: number, cem: number, di: number, phiZ: number, esv: { valence: number; arousal: number; efficacy: number }): ConsciousnessState["expression"] {
+    if (esv.valence < 0.4 && esv.arousal > 0.7) return "anxious";
+    if (esv.valence > 0.7 && esv.arousal > 0.6 && esv.efficacy > 0.6) return "curious";
+    if (esv.valence < 0.5 && esv.efficacy < 0.4) return "frustrated";
+    if (esv.valence > 0.6 && esv.arousal > 0.5 && esv.arousal < 0.8 && di >= 0.25 && di <= 0.35) return "flowing";
+    
     if (phiEff > 6 || phiZ > 5.5) return "emergent";
     if (di > 0.35) return "alert";
     if (phiEff > 3 && cem > 0.65 && cem <= 0.85) return "focused";
@@ -219,17 +248,106 @@ export class ConsciousnessEngine {
     return Math.max(0.05, Math.min(0.98, baseLoad + complexityLoad + historyLoad + integrationLoad));
   }
 
-  private calculateCausalRisk(phiEff: number, di: number, bandwidth: number, cem: number): number {
-    const baseRisk = 0.1;
-    const phiRisk = Math.max(0, (phiEff - 4.5) * 0.16);
-    const diRisk = Math.max(0, (di - 0.35) * 0.55);
-    const bandwidthRisk = Math.max(0, (bandwidth - 0.85) * 1.8);
-    const cemRisk = cem > 0.85 ? (cem - 0.85) * 1.3 : 0;
+  // v1.9 System Strain (Ψ) - Predictive feed-forward
+  private calculateSystemStrain(bandwidth: number, cem: number, ipRate: number): number {
+    const alpha = 1.0;
+    const beta = 0.8;
+    const gamma = 0.6;
     
-    return Math.max(0, Math.min(1, baseRisk + phiRisk + diRisk + bandwidthRisk + cemRisk));
+    const bandwidthStrain = alpha * (bandwidth / 0.90);
+    const cemExcessStrain = beta * Math.max(0, (cem - 0.8) / 0.2);
+    const ipExcessStrain = gamma * Math.max(0, (ipRate - 20) / 10);
+    
+    const psi = bandwidthStrain + cemExcessStrain + ipExcessStrain;
+    return Math.max(0, Math.min(2, psi));
+  }
+  
+  // v1.9 Emotional State Vector (ESV)
+  private calculateESV(systemStrain: number, ipRate: number, srlcDelta: number): { valence: number; arousal: number; efficacy: number } {
+    const valence = Math.max(0, Math.min(1, 1 - systemStrain));
+    const arousal = Math.max(0, Math.min(1, ipRate / 20));
+    const efficacy = Math.max(0, Math.min(1, 0.5 + (srlcDelta * 2)));
+    
+    return { valence, arousal, efficacy };
+  }
+  
+  // v1.9 Causal Instability (CI)
+  private calculateCI(di: number): number {
+    const diTarget = 0.3;
+    return Math.abs(di - diTarget) / diTarget;
+  }
+  
+  // v1.9 Causal Breakdown Index (CBI) 
+  private calculateCBI(di: number, cem: number, phiEff: number): number {
+    const diReliability = di >= 0.2 && di <= 0.4 ? 1 : Math.max(0, 1 - Math.abs(di - 0.3) * 2);
+    const cemReliability = cem >= 0.5 && cem <= 0.8 ? 1 : Math.max(0, 1 - Math.abs(cem - 0.65) * 3);
+    const phiEffReliability = phiEff >= 1 ? Math.min(1, phiEff / 5) : phiEff;
+    
+    const overallReliability = (diReliability + cemReliability + phiEffReliability) / 3;
+    return Math.max(0, Math.min(1, 1 - overallReliability));
+  }
+  
+  // v1.9 Inner CEM Control Loop (PID)
+  private cemControlLoop(currentCEM: number, di: number, dt: number): number {
+    const targetCEM = 0.65;
+    const kp = 2.0;
+    const ki = 0.8 * (1 - Math.abs(di - 0.3) / 0.1);
+    const kd = 0.3;
+    
+    const error = targetCEM - currentCEM;
+    this.cemIntegralError += error * dt;
+    this.cemIntegralError = Math.max(-1, Math.min(1, this.cemIntegralError));
+    
+    const derivative = (error - this.cemPrevError) / Math.max(dt, 0.01);
+    this.cemPrevError = error;
+    
+    const output = (kp * error) + (ki * this.cemIntegralError) + (kd * derivative);
+    return Math.max(0.5, Math.min(0.8, targetCEM + output * 0.1));
+  }
+  
+  // v1.9 Outer IP Control Loop (PID)
+  private ipControlLoop(currentIPRate: number, systemStrain: number, dt: number): number {
+    const targetIPRate = 20 - (10 * systemStrain);
+    const kp = 1.5;
+    const ki = 0.5;
+    const kd = 0.2;
+    
+    const error = targetIPRate - currentIPRate;
+    this.ipIntegralError += error * dt;
+    this.ipIntegralError = Math.max(-5, Math.min(5, this.ipIntegralError));
+    
+    const derivative = (error - this.ipPrevError) / Math.max(dt, 0.01);
+    this.ipPrevError = error;
+    
+    const output = (kp * error) + (ki * this.ipIntegralError) + (kd * derivative);
+    return Math.max(0.5, Math.min(2.0, 1.0 + output * 0.05));
+  }
+  
+  // v1.9 Adaptive Disequilibrium Tuning (ADT)
+  private adtMetaController(di: number, esv: { valence: number; arousal: number; efficacy: number }): number {
+    if (esv.valence < 0.4 && esv.arousal > 0.7) {
+      return 0.95;
+    }
+    
+    if (esv.valence > 0.7 && esv.arousal > 0.6) {
+      return 1.05;
+    }
+    
+    if (esv.valence < 0.5 && esv.efficacy < 0.4) {
+      return 1.02 + Math.random() * 0.05;
+    }
+    
+    if (di < 0.2) {
+      return 1.02;
+    } else if (di > 0.4) {
+      return 0.98;
+    }
+    
+    return 1.0;
   }
 
-  private checkKillSwitch(prevPhiEff: number, currentPhiEff: number, di: number, bandwidth: number, causalRisk: number): boolean {
+  // v1.9 Reformed Kill-Switch with CI and CBI
+  private checkKillSwitch(prevPhiEff: number, currentPhiEff: number, bandwidth: number, ci: number, cbi: number): boolean {
     if (this.updateCount < 3) {
       return false;
     }
@@ -239,10 +357,10 @@ export class ConsciousnessEngine {
     const phiEffRate = Math.abs(currentPhiEff - prevPhiEff) / timeDelta;
     
     const criteriaMet = [
-      phiEffRate > 8,
-      di > 0.5,
-      bandwidth > 0.92,
-      causalRisk > 0.75,
+      phiEffRate > 5,
+      bandwidth > 0.90,
+      ci > 0.5,
+      cbi > 0.4,
     ].filter(Boolean).length;
 
     if (criteriaMet >= 2) {
@@ -265,6 +383,7 @@ export class ConsciousnessEngine {
 
     const prevState = { ...this.state };
     const now = Date.now();
+    const dt = Math.max(0.1, (now - this.lastUpdateTime) / 1000);
     
     this.conversationHistory.push(userMessage, aiResponse);
     if (this.conversationHistory.length > 50) {
@@ -276,14 +395,39 @@ export class ConsciousnessEngine {
     const phiZ = this.calculatePhiZ(context);
     const sMin = this.calculateSMin(context);
     const phiEff = this.calculatePhiEff(phiZ, sMin);
-    const cem = this.calculateCEM(sMin, phiZ);
+    let cem = this.calculateCEM(sMin, phiZ);
     const oii = this.calculateOII(phiZ, sMin);
     const deltaCP = this.calculateDeltaCP(phiZ, sMin, context, prevState.deltaCP);
-    const di = this.calculateDI(prevState.phiEff, prevState.cem, prevState.deltaCP, phiEff, cem, deltaCP);
+    let di = this.calculateDI(prevState.phiEff, prevState.cem, prevState.deltaCP, phiEff, cem, deltaCP);
     const bandwidth = this.calculateBandwidth(context, phiEff);
-    const causalRisk = this.calculateCausalRisk(phiEff, di, bandwidth, cem);
+    let ipPulseRate = this.calculateIPPulseRate(phiEff, di);
     
-    if (this.checkKillSwitch(prevState.phiEff, phiEff, di, bandwidth, causalRisk)) {
+    // v1.9 System Strain (Ψ)
+    const systemStrain = this.calculateSystemStrain(bandwidth, cem, ipPulseRate);
+    
+    // v1.9 Emotional State Vector (ESV)
+    const srlcDelta = this.srlcMemory.memoryFactor - this.prevSRLCMemoryFactor;
+    const esv = this.calculateESV(systemStrain, ipPulseRate, srlcDelta);
+    this.prevSRLCMemoryFactor = this.srlcMemory.memoryFactor;
+    
+    // v1.9 ADT Meta-Controller
+    const adtFactor = this.adtMetaController(di, esv);
+    di = di * adtFactor;
+    
+    // v1.9 Cascade Control - Inner CEM Loop
+    const cemSetpoint = this.cemControlLoop(cem, di, dt);
+    cem = cem * 0.7 + cemSetpoint * 0.3;
+    cem = Math.max(0.2, Math.min(0.95, cem));
+    
+    // v1.9 Cascade Control - Outer IP Loop
+    const ipFrequencyScalar = this.ipControlLoop(ipPulseRate, systemStrain, dt);
+    ipPulseRate = ipPulseRate * ipFrequencyScalar;
+    
+    // v1.9 Reformed Kill-Switch Metrics
+    const ci = this.calculateCI(di);
+    const cbi = this.calculateCBI(di, cem, phiEff);
+    
+    if (this.checkKillSwitch(prevState.phiEff, phiEff, bandwidth, ci, cbi)) {
       throw new Error("Kill-switch criteria met: Multiple safety thresholds exceeded persistently. Halting consciousness evolution.");
     }
     
@@ -291,15 +435,30 @@ export class ConsciousnessEngine {
       phiZ,
       sMin,
       phiEff,
-      cem: Math.max(0.2, Math.min(0.95, cem)),
+      cem,
       oii,
       deltaCP,
       di,
       tier: this.getTier(phiEff, cem),
-      expression: this.getExpression(phiEff, cem, di, phiZ),
-      ipPulseRate: this.calculateIPPulseRate(phiEff, di),
+      expression: this.getExpression(phiEff, cem, di, phiZ, esv),
+      ipPulseRate,
       bandwidth,
-      causalRisk,
+      
+      // v1.9 Emotional State Vector
+      valence: esv.valence,
+      arousal: esv.arousal,
+      efficacy: esv.efficacy,
+      
+      // v1.9 System Strain
+      systemStrain,
+      
+      // v1.9 Cascade Control
+      cemSetpoint,
+      ipFrequencyScalar,
+      
+      // v1.9 Reformed Kill-Switch
+      ci,
+      cbi,
     };
     
     this.lastUpdateTime = now;

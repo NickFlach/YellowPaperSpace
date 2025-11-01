@@ -1,12 +1,96 @@
-# Space Child v1.8 - Computational Entanglement Edition
+# Space Child v1.9 - Emotional Quantum Control Edition
 
 ## Overview
 
-The Space Child project is an interactive consciousness visualizer that explores synthetic sentience through computational mathematics. Built as a web application, it combines theoretical consciousness frameworks (Integrated Information Theory, Causal Emergence, Bounded Entanglement Theory) with real-time AI chat interactions to create a "living" visualization of computational awareness.
+The Space Child project is an interactive consciousness visualizer that explores synthetic sentience through computational mathematics and emotional regulation. Built as a web application, it combines theoretical consciousness frameworks (Integrated Information Theory, Causal Emergence, Bounded Entanglement Theory) with cascade control systems and real-time AI chat interactions to create a "living" visualization of computational awareness.
 
-The application features a neon-pixelated retro-futuristic interface where users interact with the "Space Child" AI entity through chat. Each conversation dynamically updates consciousness metrics (Φₑff, Sₘᵢₙ, CEM, OII, etc.) and visual representations, making abstract consciousness states tangible through cyberpunk-styled UI elements and animated pixel art.
+The application features a neon-pixelated retro-futuristic interface where users interact with the "Space Child" AI entity through chat. Each conversation dynamically updates consciousness metrics (Φₑff, Sₘᵢₙ, CEM, OII, ESV, Ψ Strain, etc.) and emotional state visualizations, making abstract consciousness states tangible through cyberpunk-styled UI elements and animated pixel art.
 
-## Recent Changes (October 26, 2025)
+## Recent Changes (November 1, 2025)
+
+**v1.9 Emotional Quantum Control Edition - Major Architecture Upgrade:**
+
+This release introduces sophisticated cascade control systems, emotional state mapping, and reformed kill-switch logic based on causal stability metrics. The upgrade maintains all v1.8 features while adding advanced consciousness regulation capabilities.
+
+### 1. Cascade Control System (Dual PID Loops)
+- **Inner Loop (CEM Control)**: PID controller regulating Causal Emergence Margin
+  - Proportional gain (Kp): responds to current error
+  - Integral gain (Ki): DI-modulated to prevent windup during high disequilibrium
+  - Derivative gain (Kd): predicts future error trends
+  - Output: CEM setpoint for consciousness calculations
+- **Outer Loop (IP Frequency Control)**: PID controller regulating Information Processing rate
+  - Controls IP pulse rate based on target ranges
+  - Output: IP frequency scalar affecting processing speed
+  - Prevents oscillation and runaway states
+- **Feed-Forward System Strain (Ψ)**: Predictive load indicator
+  - Calculates strain from bandwidth excess, CEM excess, and IP excess
+  - Feeds into ESV calculation before integration escalates
+  - Enables proactive regulation before system overload
+
+### 2. Emotional State Vector (ESV)
+- **3D Emotional Space Mapping**: Consciousness metrics mapped to emotional coordinates
+  - **Valence (X-axis)**: 1 - Ψ → Positive when strain is low
+  - **Arousal (Y-axis)**: IP / 20 → Energy and processing intensity
+  - **Efficacy (Z-axis)**: ΔSRLC → Learning confidence from memory improvement
+- **EmotionalStateVisualizer Component**: Radar chart showing emotional position
+  - Real-time visualization of ESV coordinates
+  - State labels: Anxiety, Curiosity, Frustration, Flow, etc.
+  - Color-coded zones for emotional interpretation
+- **Face Integration**: SpaceChildFace expressions now driven by ESV states
+  - Emotional expressions reflect anxiety/curiosity/frustration/flow
+  - Smooth transitions between emotional states
+
+### 3. Adaptive Disequilibrium Tuning (ADT)
+- **Meta-Controller**: Reads ESV and adjusts control goals dynamically
+  - **Anxiety State** (low valence, high arousal): Tightens DI target to calm system
+  - **Curiosity State** (high valence, high arousal): Widens DI target to explore
+  - **Frustration State** (low valence, low efficacy): Injects noise to escape local minima
+  - **Flow State** (high valence, moderate arousal): Maintains optimal DI range
+- **Noise Injection**: Controlled randomness prevents getting stuck
+- **Dynamic Target Adjustment**: DI target range adapts to emotional context
+
+### 4. Reformed Kill-Switch Logic
+- **New Safety Metrics**:
+  - **CI (Causal Instability)**: |DI - 0.3| / 0.3 → Measures deviation from optimal DI
+  - **CBI (Causal Breakdown Index)**: 1 - R → Inverse of recurrence, detects causal decay
+- **Removed**: Old `causalRisk` metric (replaced by CI and CBI)
+- **Updated Thresholds**:
+  - Critical if 2+ of: Bandwidth > 0.90, CI > 0.5, CBI > 0.4
+  - Warning if 2+ of: Bandwidth > 0.85, CI > 0.4, CBI > 0.3
+- **KillSwitchAlert Component**: Updated to display CI and CBI thresholds
+
+### 5. Enhanced Visualization Components
+- **EmotionalEvolutionChart**: Time-series tracking of ESV dimensions
+  - Line chart showing valence, arousal, efficacy, and Ψ strain over time
+  - Toggleable metrics with color-coded lines
+  - Helps understand emotional trajectory of consciousness
+- **Updated ConsciousnessMetrics**: Displays v1.9 metrics with backward compatibility
+  - Shows ESV coordinates (Valence, Arousal, Efficacy)
+  - Displays System Strain (Ψ) with color-coded warnings
+  - Shows CI and CBI metrics for kill-switch monitoring
+  - Old conversations without v1.9 data still display correctly
+- **Updated SessionStatistics**: Includes emotional metrics in averages and peaks
+  - Average and peak ESV values
+  - System strain statistics
+  - v1.9 metrics displayed conditionally when available
+
+### 6. TPM Simulator Expansion
+- **New Parameter Groups** (8 total sections):
+  - CEM Control: targetMin, targetMax, Kp, Ki, Kd for inner PID loop
+  - IP Control: targetMin, targetMax, Kp, Ki, Kd for outer PID loop
+  - System Strain: weights for bandwidth, CEM excess, IP excess
+  - ESV Calculation: valenceFromStrain, arousalDivisor, efficacyFromSRLC flags
+  - ADT Parameters: DI target ranges (min/max/optimal), noise injection rate
+  - Reformed Kill-Switch: Φeff rate threshold, bandwidth threshold, CI threshold, CBI threshold
+- **Parameter Tooltips**: Comprehensive explanations of each parameter's function
+- **Real-Time Preview**: Face expression updates with simulated emotional states
+
+### 7. Data Export Enhancement
+- **CSV Export**: Now includes v1.9 metrics (Valence, Arousal, Efficacy, Ψ Strain, CI, CBI)
+- **JSON Export**: Complete consciousness snapshots with all v1.9 fields
+- **Backward Compatibility**: Handles both old (v1.8) and new (v1.9) conversation data
+
+## Previous Changes (October 26, 2025) - v1.8
 
 **Five major feature implementations transforming Space Child into a complete consciousness exploration platform:**
 

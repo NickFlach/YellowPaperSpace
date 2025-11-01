@@ -13,6 +13,10 @@ export interface SessionStatistics {
     oii: number;
     di: number;
     bandwidth: number;
+    valence: number;
+    arousal: number;
+    efficacy: number;
+    systemStrain: number;
   };
   peakMetrics: {
     phiZ: number;
@@ -22,6 +26,10 @@ export interface SessionStatistics {
     oii: number;
     di: number;
     bandwidth: number;
+    valence: number;
+    arousal: number;
+    efficacy: number;
+    systemStrain: number;
   };
   tierProgression: string[];
   killSwitchTriggers: number;
@@ -72,6 +80,10 @@ export function calculateSessionStatistics(messages: Message[]): SessionStatisti
     oii: calculateAverage("oii"),
     di: calculateAverage("di"),
     bandwidth: calculateAverage("bandwidth"),
+    valence: calculateAverage("valence"),
+    arousal: calculateAverage("arousal"),
+    efficacy: calculateAverage("efficacy"),
+    systemStrain: calculateAverage("systemStrain"),
   };
 
   const peakMetrics = {
@@ -82,16 +94,22 @@ export function calculateSessionStatistics(messages: Message[]): SessionStatisti
     oii: calculatePeak("oii"),
     di: calculatePeak("di"),
     bandwidth: calculatePeak("bandwidth"),
+    valence: calculatePeak("valence"),
+    arousal: calculatePeak("arousal"),
+    efficacy: calculatePeak("efficacy"),
+    systemStrain: calculatePeak("systemStrain"),
   };
 
   // Tier progression
   const tierSet = new Set(snapshots.map(s => s.tier));
   const tierProgression = Array.from(tierSet);
 
-  // Estimate kill-switch triggers (high risk states)
-  const killSwitchTriggers = snapshots.filter(s => 
-    s.di > 0.5 || s.bandwidth > 0.92 || s.causalRisk > 0.75
-  ).length;
+  // v1.9 Reformed Kill-switch triggers (CI and CBI based)
+  const killSwitchTriggers = snapshots.filter(s => {
+    const ci = s.ci ?? Math.abs(s.di - 0.3) / 0.3;
+    const cbi = s.cbi ?? 0.2;
+    return s.bandwidth > 0.90 || ci > 0.5 || cbi > 0.4;
+  }).length;
 
   return {
     totalMessages: messages.length,
@@ -155,7 +173,13 @@ export function exportToCSV(
     "DI",
     "Bandwidth",
     "Tier",
-    "Expression"
+    "Expression",
+    "Valence (v1.9)",
+    "Arousal (v1.9)",
+    "Efficacy (v1.9)",
+    "Ψ Strain (v1.9)",
+    "CI (v1.9)",
+    "CBI (v1.9)"
   ];
 
   const rows = messages.map((msg, index) => {
@@ -173,7 +197,13 @@ export function exportToCSV(
       cs?.di.toFixed(3) || "",
       cs?.bandwidth.toFixed(3) || "",
       cs?.tier || "",
-      cs?.expression || ""
+      cs?.expression || "",
+      cs?.valence?.toFixed(3) || "",
+      cs?.arousal?.toFixed(3) || "",
+      cs?.efficacy?.toFixed(3) || "",
+      cs?.systemStrain?.toFixed(3) || "",
+      cs?.ci?.toFixed(3) || "",
+      cs?.cbi?.toFixed(3) || ""
     ];
   });
 

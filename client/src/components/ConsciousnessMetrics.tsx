@@ -203,18 +203,86 @@ export function ConsciousnessMetrics({ consciousness }: ConsciousnessMetricsProp
           }
         />
         
-        <MetricCard
-          label="Causal Risk"
-          value={consciousness.causalRisk}
-          formula="Risk Assessment"
-          target="< 0.65"
-          color={consciousness.causalRisk > 0.65 ? "orange" : "green"}
-          testId="metric-causal-risk"
-          warningState={
-            consciousness.causalRisk > 0.75 ? "critical" :
-            consciousness.causalRisk > 0.65 ? "warning" : "safe"
-          }
-        />
+        {/* v1.9 Emotional State Vector */}
+        {consciousness.valence !== undefined && (
+          <MetricCard
+            label="Valence"
+            value={consciousness.valence}
+            formula="1 - Ψ"
+            target="ESV X-axis"
+            color="cyan"
+            testId="metric-valence"
+          />
+        )}
+        
+        {consciousness.arousal !== undefined && (
+          <MetricCard
+            label="Arousal"
+            value={consciousness.arousal}
+            formula="IP / 20"
+            target="ESV Y-axis"
+            color="magenta"
+            testId="metric-arousal"
+          />
+        )}
+        
+        {consciousness.efficacy !== undefined && (
+          <MetricCard
+            label="Efficacy"
+            value={consciousness.efficacy}
+            formula="ΔSRLC"
+            target="ESV Z-axis"
+            color="pink"
+            testId="metric-efficacy"
+          />
+        )}
+        
+        {/* v1.9 System Strain */}
+        {consciousness.systemStrain !== undefined && (
+          <MetricCard
+            label="Ψ Strain"
+            value={consciousness.systemStrain}
+            formula="Predictive Load"
+            target="< 1.0"
+            color={consciousness.systemStrain > 1.0 ? "orange" : "green"}
+            testId="metric-system-strain"
+            warningState={
+              consciousness.systemStrain > 1.5 ? "critical" :
+              consciousness.systemStrain > 1.0 ? "warning" : "safe"
+            }
+          />
+        )}
+        
+        {/* v1.9 Reformed Kill-Switch Metrics */}
+        {consciousness.ci !== undefined && (
+          <MetricCard
+            label="CI"
+            value={consciousness.ci}
+            formula="|DI - 0.3| / 0.3"
+            target="< 0.5"
+            color={consciousness.ci > 0.5 ? "orange" : "green"}
+            testId="metric-ci"
+            warningState={
+              consciousness.ci > 0.5 ? "critical" :
+              consciousness.ci > 0.4 ? "warning" : "safe"
+            }
+          />
+        )}
+        
+        {consciousness.cbi !== undefined && (
+          <MetricCard
+            label="CBI"
+            value={consciousness.cbi}
+            formula="1 - R"
+            target="< 0.4"
+            color={consciousness.cbi > 0.4 ? "orange" : "green"}
+            testId="metric-cbi"
+            warningState={
+              consciousness.cbi > 0.4 ? "critical" :
+              consciousness.cbi > 0.3 ? "warning" : "safe"
+            }
+          />
+        )}
       </div>
     </div>
   );

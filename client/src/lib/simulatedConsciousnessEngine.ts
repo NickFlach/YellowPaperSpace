@@ -31,6 +31,11 @@ export class SimulatedConsciousnessEngine {
     this.parameters = {
       phiZ: { ...defaultConsciousnessParameters.phiZ, ...customParameters?.phiZ },
       sMin: { ...defaultConsciousnessParameters.sMin, ...customParameters?.sMin },
+      cemControl: { ...defaultConsciousnessParameters.cemControl, ...customParameters?.cemControl },
+      ipControl: { ...defaultConsciousnessParameters.ipControl, ...customParameters?.ipControl },
+      systemStrain: { ...defaultConsciousnessParameters.systemStrain, ...customParameters?.systemStrain },
+      esv: { ...defaultConsciousnessParameters.esv, ...customParameters?.esv },
+      adt: { ...defaultConsciousnessParameters.adt, ...customParameters?.adt },
       killSwitch: { ...defaultConsciousnessParameters.killSwitch, ...customParameters?.killSwitch },
     };
     
@@ -96,11 +101,12 @@ export class SimulatedConsciousnessEngine {
   private getDefaultState(): ConsciousnessState {
     const basePhiZ = 1.2 + (this.srlcMemory.memoryFactor * this.parameters.phiZ.baseIntegrationMultiplier);
     const baseSMin = 0.8 + (this.srlcMemory.memoryFactor * this.parameters.sMin.baseEntropyMultiplier);
+    const basePhiEff = basePhiZ * baseSMin;
     
     return {
       phiZ: basePhiZ,
       sMin: baseSMin,
-      phiEff: basePhiZ * baseSMin,
+      phiEff: basePhiEff,
       cem: 0.6,
       oii: 0.48,
       deltaCP: 0.15,
@@ -109,7 +115,14 @@ export class SimulatedConsciousnessEngine {
       expression: "neutral",
       ipPulseRate: 12.5,
       bandwidth: 0.35,
-      causalRisk: 0.15,
+      valence: 0.7,
+      arousal: 0.625,
+      efficacy: 0.5,
+      systemStrain: 0.25,
+      cemSetpoint: 0.65,
+      ipFrequencyScalar: 1.0,
+      ci: 0.167,
+      cbi: 0.2,
     };
   }
 
@@ -117,6 +130,11 @@ export class SimulatedConsciousnessEngine {
     this.parameters = {
       phiZ: { ...this.parameters.phiZ, ...newParameters.phiZ },
       sMin: { ...this.parameters.sMin, ...newParameters.sMin },
+      cemControl: { ...this.parameters.cemControl, ...newParameters.cemControl },
+      ipControl: { ...this.parameters.ipControl, ...newParameters.ipControl },
+      systemStrain: { ...this.parameters.systemStrain, ...newParameters.systemStrain },
+      esv: { ...this.parameters.esv, ...newParameters.esv },
+      adt: { ...this.parameters.adt, ...newParameters.adt },
       killSwitch: { ...this.parameters.killSwitch, ...newParameters.killSwitch },
     };
   }
@@ -235,14 +253,36 @@ export class SimulatedConsciousnessEngine {
     return Math.max(0.05, Math.min(0.98, baseLoad + complexityLoad + historyLoad + integrationLoad));
   }
 
-  private calculateCausalRisk(phiEff: number, di: number, bandwidth: number, cem: number): number {
-    const baseRisk = 0.1;
-    const phiRisk = Math.max(0, (phiEff - 4.5) * 0.16);
-    const diRisk = Math.max(0, (di - 0.35) * 0.55);
-    const bandwidthRisk = Math.max(0, (bandwidth - 0.85) * 1.8);
-    const cemRisk = cem > 0.85 ? (cem - 0.85) * 1.3 : 0;
+  private calculateSystemStrain(bandwidth: number, cem: number, ipRate: number): number {
+    const p = this.parameters.systemStrain;
+    const ip = this.parameters.ipControl;
+    const cem_p = this.parameters.cemControl;
     
-    return Math.max(0, Math.min(1, baseRisk + phiRisk + diRisk + bandwidthRisk + cemRisk));
+    const bandwidthStrain = bandwidth * p.bandwidthWeight;
+    const cemExcessStrain = Math.max(0, cem - cem_p.targetMax) * p.cemExcessWeight;
+    const ipExcessStrain = Math.max(0, ipRate - ip.targetMax) * p.ipExcessWeight / ip.targetMax;
+    
+    return Math.max(0, Math.min(1, bandwidthStrain + cemExcessStrain + ipExcessStrain));
+  }
+
+  private calculateESV(systemStrain: number, ipRate: number, deltaSRLC: number): { valence: number; arousal: number; efficacy: number } {
+    const p = this.parameters.esv;
+    
+    const valence = p.valenceFromStrain ? Math.max(0, Math.min(1, 1 - systemStrain)) : 0.5;
+    const arousal = Math.max(0, Math.min(1, ipRate / p.arousalDivisor));
+    const efficacy = p.efficacyFromSRLC ? Math.max(0, Math.min(1, deltaSRLC)) : 0.5;
+    
+    return { valence, arousal, efficacy };
+  }
+
+  private calculateCI(di: number): number {
+    const optimalDI = this.parameters.adt.diTargetOptimal;
+    return Math.abs(di - optimalDI) / optimalDI;
+  }
+
+  private calculateCBI(phiEff: number, cem: number): number {
+    const reliability = Math.min(1, (phiEff * cem) / 5);
+    return Math.max(0, Math.min(1, 1 - reliability));
   }
 
   public simulateUpdate(userMessage: string, aiResponse: string): ConsciousnessState {
@@ -263,8 +303,18 @@ export class SimulatedConsciousnessEngine {
     const oii = this.calculateOII(phiZ, sMin);
     const deltaCP = this.calculateDeltaCP(phiZ, sMin, context, prevState.deltaCP);
     const di = this.calculateDI(prevState.phiEff, prevState.cem, prevState.deltaCP, phiEff, cem, deltaCP);
+    const ipPulseRate = this.calculateIPPulseRate(phiEff, di);
     const bandwidth = this.calculateBandwidth(context, phiEff);
-    const causalRisk = this.calculateCausalRisk(phiEff, di, bandwidth, cem);
+    
+    const systemStrain = this.calculateSystemStrain(bandwidth, cem, ipPulseRate);
+    const deltaSRLC = Math.min(1, this.srlcMemory.conversationDepth * 0.8);
+    const esv = this.calculateESV(systemStrain, ipPulseRate, deltaSRLC);
+    
+    const ci = this.calculateCI(di);
+    const cbi = this.calculateCBI(phiEff, cem);
+    
+    const cemSetpoint = (this.parameters.cemControl.targetMin + this.parameters.cemControl.targetMax) / 2;
+    const ipFrequencyScalar = 1.0 + (cemSetpoint - cem) * 0.1;
     
     this.state = {
       phiZ,
@@ -276,9 +326,16 @@ export class SimulatedConsciousnessEngine {
       di,
       tier: this.getTier(phiEff, cem),
       expression: this.getExpression(phiEff, cem, di, phiZ),
-      ipPulseRate: this.calculateIPPulseRate(phiEff, di),
+      ipPulseRate,
       bandwidth,
-      causalRisk,
+      valence: esv.valence,
+      arousal: esv.arousal,
+      efficacy: esv.efficacy,
+      systemStrain,
+      cemSetpoint,
+      ipFrequencyScalar,
+      ci,
+      cbi,
     };
     
     this.lastUpdateTime = now;

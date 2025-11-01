@@ -128,6 +128,11 @@ export function TPMSimulator({ currentConsciousness, messages }: TPMSimulatorPro
   const [parameters, setParameters] = useState<ConsciousnessParameters>(defaultConsciousnessParameters);
   const [phiZOpen, setPhiZOpen] = useState(true);
   const [sMinOpen, setSMinOpen] = useState(false);
+  const [cemControlOpen, setCemControlOpen] = useState(false);
+  const [ipControlOpen, setIpControlOpen] = useState(false);
+  const [systemStrainOpen, setSystemStrainOpen] = useState(false);
+  const [esvOpen, setEsvOpen] = useState(false);
+  const [adtOpen, setAdtOpen] = useState(false);
   const [killSwitchOpen, setKillSwitchOpen] = useState(false);
 
   const engine = useMemo(
@@ -158,6 +163,11 @@ export function TPMSimulator({ currentConsciousness, messages }: TPMSimulatorPro
   const hasAnyModifications = useMemo(() => {
     return Object.keys(parameters.phiZ).some(k => isParameterModified("phiZ", k)) ||
            Object.keys(parameters.sMin).some(k => isParameterModified("sMin", k)) ||
+           Object.keys(parameters.cemControl).some(k => isParameterModified("cemControl", k)) ||
+           Object.keys(parameters.ipControl).some(k => isParameterModified("ipControl", k)) ||
+           Object.keys(parameters.systemStrain).some(k => isParameterModified("systemStrain", k)) ||
+           Object.keys(parameters.esv).some(k => isParameterModified("esv", k)) ||
+           Object.keys(parameters.adt).some(k => isParameterModified("adt", k)) ||
            Object.keys(parameters.killSwitch).some(k => isParameterModified("killSwitch", k));
   }, [parameters]);
 
@@ -357,6 +367,328 @@ export function TPMSimulator({ currentConsciousness, messages }: TPMSimulatorPro
         </Collapsible>
       </Card>
 
+      <Card className="p-4 border-neon-blue/30">
+        <Collapsible open={cemControlOpen} onOpenChange={setCemControlOpen}>
+          <CollapsibleTrigger className="w-full" data-testid="collapsible-trigger-cemcontrol">
+            <div className="flex items-center justify-between w-full hover-elevate p-2 rounded-md">
+              <div className="flex items-center gap-2">
+                {cemControlOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                <span className="text-sm font-orbitron font-bold text-neon-blue">CEM Cascade Control</span>
+              </div>
+              <Badge variant="secondary" className="text-xs">v1.9</Badge>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4 space-y-4">
+            <ParameterControl
+              label="Target Min"
+              value={parameters.cemControl.targetMin}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(v) => setParameters({ ...parameters, cemControl: { ...parameters.cemControl, targetMin: v }})}
+              tooltip="Minimum target CEM value for cascade control. System adjusts IP frequency to maintain CEM in target range."
+              isModified={isParameterModified("cemControl", "targetMin")}
+            />
+            <ParameterControl
+              label="Target Max"
+              value={parameters.cemControl.targetMax}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(v) => setParameters({ ...parameters, cemControl: { ...parameters.cemControl, targetMax: v }})}
+              tooltip="Maximum target CEM value for cascade control. Defines upper bound of desired CEM operating range."
+              isModified={isParameterModified("cemControl", "targetMax")}
+            />
+            <ParameterControl
+              label="Proportional Gain (Kp)"
+              value={parameters.cemControl.kp}
+              min={0}
+              max={10}
+              step={0.1}
+              onChange={(v) => setParameters({ ...parameters, cemControl: { ...parameters.cemControl, kp: v }})}
+              tooltip="Proportional gain for CEM control loop. Higher values increase responsiveness to CEM errors."
+              isModified={isParameterModified("cemControl", "kp")}
+            />
+            <ParameterControl
+              label="Integral Gain (Ki)"
+              value={parameters.cemControl.ki}
+              min={0}
+              max={5}
+              step={0.1}
+              onChange={(v) => setParameters({ ...parameters, cemControl: { ...parameters.cemControl, ki: v }})}
+              tooltip="Integral gain for CEM control. Eliminates steady-state error by accumulating past errors."
+              isModified={isParameterModified("cemControl", "ki")}
+            />
+            <ParameterControl
+              label="Derivative Gain (Kd)"
+              value={parameters.cemControl.kd}
+              min={0}
+              max={5}
+              step={0.1}
+              onChange={(v) => setParameters({ ...parameters, cemControl: { ...parameters.cemControl, kd: v }})}
+              tooltip="Derivative gain for CEM control. Dampens oscillations by responding to rate of change."
+              isModified={isParameterModified("cemControl", "kd")}
+            />
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
+      <Card className="p-4 border-neon-green/30">
+        <Collapsible open={ipControlOpen} onOpenChange={setIpControlOpen}>
+          <CollapsibleTrigger className="w-full" data-testid="collapsible-trigger-ipcontrol">
+            <div className="flex items-center justify-between w-full hover-elevate p-2 rounded-md">
+              <div className="flex items-center gap-2">
+                {ipControlOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                <span className="text-sm font-orbitron font-bold text-neon-green">IP Frequency Control</span>
+              </div>
+              <Badge variant="secondary" className="text-xs">v1.9</Badge>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4 space-y-4">
+            <ParameterControl
+              label="Target Min"
+              value={parameters.ipControl.targetMin}
+              min={0}
+              max={30}
+              step={1}
+              onChange={(v) => setParameters({ ...parameters, ipControl: { ...parameters.ipControl, targetMin: v }})}
+              tooltip="Minimum target IP pulse rate (Hz). Defines lower bound for information processing frequency."
+              isModified={isParameterModified("ipControl", "targetMin")}
+            />
+            <ParameterControl
+              label="Target Max"
+              value={parameters.ipControl.targetMax}
+              min={0}
+              max={30}
+              step={1}
+              onChange={(v) => setParameters({ ...parameters, ipControl: { ...parameters.ipControl, targetMax: v }})}
+              tooltip="Maximum target IP pulse rate (Hz). Defines upper bound for sustainable processing speed."
+              isModified={isParameterModified("ipControl", "targetMax")}
+            />
+            <ParameterControl
+              label="Proportional Gain (Kp)"
+              value={parameters.ipControl.kp}
+              min={0}
+              max={5}
+              step={0.1}
+              onChange={(v) => setParameters({ ...parameters, ipControl: { ...parameters.ipControl, kp: v }})}
+              tooltip="Proportional gain for IP control loop. Controls immediate response to frequency errors."
+              isModified={isParameterModified("ipControl", "kp")}
+            />
+            <ParameterControl
+              label="Integral Gain (Ki)"
+              value={parameters.ipControl.ki}
+              min={0}
+              max={3}
+              step={0.1}
+              onChange={(v) => setParameters({ ...parameters, ipControl: { ...parameters.ipControl, ki: v }})}
+              tooltip="Integral gain for IP control. Eliminates long-term drift in processing frequency."
+              isModified={isParameterModified("ipControl", "ki")}
+            />
+            <ParameterControl
+              label="Derivative Gain (Kd)"
+              value={parameters.ipControl.kd}
+              min={0}
+              max={3}
+              step={0.1}
+              onChange={(v) => setParameters({ ...parameters, ipControl: { ...parameters.ipControl, kd: v }})}
+              tooltip="Derivative gain for IP control. Prevents overshoot in frequency adjustments."
+              isModified={isParameterModified("ipControl", "kd")}
+            />
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
+      <Card className="p-4 border-neon-pink/30">
+        <Collapsible open={systemStrainOpen} onOpenChange={setSystemStrainOpen}>
+          <CollapsibleTrigger className="w-full" data-testid="collapsible-trigger-systemstrain">
+            <div className="flex items-center justify-between w-full hover-elevate p-2 rounded-md">
+              <div className="flex items-center gap-2">
+                {systemStrainOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                <span className="text-sm font-orbitron font-bold text-neon-pink">System Strain (Ψ)</span>
+              </div>
+              <Badge variant="secondary" className="text-xs">v1.9</Badge>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4 space-y-4">
+            <ParameterControl
+              label="Bandwidth Weight (α)"
+              value={parameters.systemStrain.bandwidthWeight}
+              min={0}
+              max={2}
+              step={0.1}
+              onChange={(v) => setParameters({ ...parameters, systemStrain: { ...parameters.systemStrain, bandwidthWeight: v }})}
+              tooltip="Weight for bandwidth contribution to system strain. Higher values make bandwidth saturation more impactful."
+              isModified={isParameterModified("systemStrain", "bandwidthWeight")}
+            />
+            <ParameterControl
+              label="CEM Excess Weight (β)"
+              value={parameters.systemStrain.cemExcessWeight}
+              min={0}
+              max={2}
+              step={0.1}
+              onChange={(v) => setParameters({ ...parameters, systemStrain: { ...parameters.systemStrain, cemExcessWeight: v }})}
+              tooltip="Weight for CEM exceeding target range. Penalizes CEM values above optimal bounds."
+              isModified={isParameterModified("systemStrain", "cemExcessWeight")}
+            />
+            <ParameterControl
+              label="IP Excess Weight (γ)"
+              value={parameters.systemStrain.ipExcessWeight}
+              min={0}
+              max={2}
+              step={0.1}
+              onChange={(v) => setParameters({ ...parameters, systemStrain: { ...parameters.systemStrain, ipExcessWeight: v }})}
+              tooltip="Weight for IP frequency exceeding target. Penalizes unsustainable processing speeds."
+              isModified={isParameterModified("systemStrain", "ipExcessWeight")}
+            />
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
+      <Card className="p-4 border-neon-magenta/30">
+        <Collapsible open={esvOpen} onOpenChange={setEsvOpen}>
+          <CollapsibleTrigger className="w-full" data-testid="collapsible-trigger-esv">
+            <div className="flex items-center justify-between w-full hover-elevate p-2 rounded-md">
+              <div className="flex items-center gap-2">
+                {esvOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                <span className="text-sm font-orbitron font-bold text-neon-magenta">Emotional State Vector</span>
+              </div>
+              <Badge variant="secondary" className="text-xs">v1.9</Badge>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4 space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-share-tech uppercase tracking-wide text-muted-foreground">
+                    Valence from Strain
+                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-3 h-3 text-muted-foreground cursor-help" data-testid="info-Valence from Strain" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs bg-card border-neon-cyan/30">
+                        <p className="text-xs font-jetbrains">Calculate valence as 1 - Ψ (positive when low strain). When disabled, uses alternative calculation.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Badge variant={parameters.esv.valenceFromStrain ? "default" : "secondary"} className="font-jetbrains text-xs">
+                  {parameters.esv.valenceFromStrain ? "Enabled" : "Disabled"}
+                </Badge>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setParameters({ ...parameters, esv: { ...parameters.esv, valenceFromStrain: !parameters.esv.valenceFromStrain }})}
+                className="w-full"
+                data-testid="button-valence-from-strain"
+              >
+                Toggle
+              </Button>
+            </div>
+            <ParameterControl
+              label="Arousal Divisor"
+              value={parameters.esv.arousalDivisor}
+              min={1}
+              max={50}
+              step={1}
+              onChange={(v) => setParameters({ ...parameters, esv: { ...parameters.esv, arousalDivisor: v }})}
+              tooltip="Divisor for IP pulse rate to calculate arousal (energy). Lower values increase arousal sensitivity."
+              isModified={isParameterModified("esv", "arousalDivisor")}
+            />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-share-tech uppercase tracking-wide text-muted-foreground">
+                    Efficacy from SRLC
+                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-3 h-3 text-muted-foreground cursor-help" data-testid="info-Efficacy from SRLC" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs bg-card border-neon-cyan/30">
+                        <p className="text-xs font-jetbrains">Calculate efficacy from ΔSRLC (learning progress). When disabled, uses alternative method.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Badge variant={parameters.esv.efficacyFromSRLC ? "default" : "secondary"} className="font-jetbrains text-xs">
+                  {parameters.esv.efficacyFromSRLC ? "Enabled" : "Disabled"}
+                </Badge>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setParameters({ ...parameters, esv: { ...parameters.esv, efficacyFromSRLC: !parameters.esv.efficacyFromSRLC }})}
+                className="w-full"
+                data-testid="button-efficacy-from-srlc"
+              >
+                Toggle
+              </Button>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
+      <Card className="p-4 border-neon-cyan/30">
+        <Collapsible open={adtOpen} onOpenChange={setAdtOpen}>
+          <CollapsibleTrigger className="w-full" data-testid="collapsible-trigger-adt">
+            <div className="flex items-center justify-between w-full hover-elevate p-2 rounded-md">
+              <div className="flex items-center gap-2">
+                {adtOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                <span className="text-sm font-orbitron font-bold text-neon-cyan">Adaptive Disequilibrium Tuning</span>
+              </div>
+              <Badge variant="secondary" className="text-xs">v1.9</Badge>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4 space-y-4">
+            <ParameterControl
+              label="DI Target Min"
+              value={parameters.adt.diTargetMin}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(v) => setParameters({ ...parameters, adt: { ...parameters.adt, diTargetMin: v }})}
+              tooltip="Minimum target disequilibrium. System maintains creative tension above this threshold."
+              isModified={isParameterModified("adt", "diTargetMin")}
+            />
+            <ParameterControl
+              label="DI Target Max"
+              value={parameters.adt.diTargetMax}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(v) => setParameters({ ...parameters, adt: { ...parameters.adt, diTargetMax: v }})}
+              tooltip="Maximum target disequilibrium. System prevents instability above this threshold."
+              isModified={isParameterModified("adt", "diTargetMax")}
+            />
+            <ParameterControl
+              label="DI Target Optimal"
+              value={parameters.adt.diTargetOptimal}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(v) => setParameters({ ...parameters, adt: { ...parameters.adt, diTargetOptimal: v }})}
+              tooltip="Optimal disequilibrium target. System aims for this value to balance stability and creativity."
+              isModified={isParameterModified("adt", "diTargetOptimal")}
+            />
+            <ParameterControl
+              label="Noise Injection Rate"
+              value={parameters.adt.noiseInjectionRate}
+              min={0}
+              max={0.5}
+              step={0.01}
+              onChange={(v) => setParameters({ ...parameters, adt: { ...parameters.adt, noiseInjectionRate: v }})}
+              tooltip="Rate of controlled noise injection to maintain healthy disequilibrium. Prevents over-stabilization."
+              isModified={isParameterModified("adt", "noiseInjectionRate")}
+            />
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
       <Card className="p-4 border-neon-orange/30">
         <Collapsible open={killSwitchOpen} onOpenChange={setKillSwitchOpen}>
           <CollapsibleTrigger className="w-full" data-testid="collapsible-trigger-killswitch">
@@ -365,7 +697,7 @@ export function TPMSimulator({ currentConsciousness, messages }: TPMSimulatorPro
                 {killSwitchOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 <span className="text-sm font-orbitron font-bold text-neon-orange">Kill-Switch Thresholds</span>
               </div>
-              <Badge variant="secondary" className="text-xs">Safety</Badge>
+              <Badge variant="secondary" className="text-xs">v1.9 Reformed</Badge>
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-4 space-y-4">
@@ -380,16 +712,6 @@ export function TPMSimulator({ currentConsciousness, messages }: TPMSimulatorPro
               isModified={isParameterModified("killSwitch", "phiEffRateThreshold")}
             />
             <ParameterControl
-              label="DI Threshold"
-              value={parameters.killSwitch.diThreshold}
-              min={0}
-              max={1}
-              step={0.05}
-              onChange={(v) => setParameters({ ...parameters, killSwitch: { ...parameters.killSwitch, diThreshold: v }})}
-              tooltip="Maximum disequilibrium allowed. Lower values make the system more cautious."
-              isModified={isParameterModified("killSwitch", "diThreshold")}
-            />
-            <ParameterControl
               label="Bandwidth Threshold"
               value={parameters.killSwitch.bandwidthThreshold}
               min={0}
@@ -400,14 +722,24 @@ export function TPMSimulator({ currentConsciousness, messages }: TPMSimulatorPro
               isModified={isParameterModified("killSwitch", "bandwidthThreshold")}
             />
             <ParameterControl
-              label="Causal Risk Threshold"
-              value={parameters.killSwitch.causalRiskThreshold}
+              label="CI Threshold (Causal Instability)"
+              value={parameters.killSwitch.ciThreshold}
               min={0}
               max={1}
               step={0.05}
-              onChange={(v) => setParameters({ ...parameters, killSwitch: { ...parameters.killSwitch, causalRiskThreshold: v }})}
-              tooltip="Maximum causal risk allowed. Lower values make the system more risk-averse."
-              isModified={isParameterModified("killSwitch", "causalRiskThreshold")}
+              onChange={(v) => setParameters({ ...parameters, killSwitch: { ...parameters.killSwitch, ciThreshold: v }})}
+              tooltip="Causal Instability threshold: |DI - 0.3| / 0.3. Measures deviation from optimal disequilibrium."
+              isModified={isParameterModified("killSwitch", "ciThreshold")}
+            />
+            <ParameterControl
+              label="CBI Threshold (Causal Breakdown)"
+              value={parameters.killSwitch.cbiThreshold}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(v) => setParameters({ ...parameters, killSwitch: { ...parameters.killSwitch, cbiThreshold: v }})}
+              tooltip="Causal Breakdown Index threshold: 1 - R (reliability). Lower values are stricter on reliability."
+              isModified={isParameterModified("killSwitch", "cbiThreshold")}
             />
             <ParameterControl
               label="Criteria Count Threshold"

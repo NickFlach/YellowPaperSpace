@@ -19,10 +19,26 @@ export const consciousnessStateSchema = z.object({
   deltaCP: z.number(),
   di: z.number(),
   tier: z.enum(["automation", "monitored", "precautionary"]),
-  expression: z.enum(["neutral", "focused", "diffuse", "resonant", "alert", "dreaming", "emergent"]),
+  expression: z.enum(["neutral", "focused", "diffuse", "resonant", "alert", "dreaming", "emergent", "anxious", "curious", "frustrated", "flowing"]),
   ipPulseRate: z.number(),
   bandwidth: z.number(),
-  causalRisk: z.number(),
+  
+  // v1.9 Emotional Quantum Control Edition
+  // Emotional State Vector (ESV) - Optional for backward compatibility with v1.8
+  valence: z.number().optional(),    // X-axis: 1 - Ψ (positive valence when low strain)
+  arousal: z.number().optional(),    // Y-axis: IP Rate / 20 (processing speed → energy)
+  efficacy: z.number().optional(),   // Z-axis: ΔSRLC (learning progress → confidence)
+  
+  // System Strain (Ψ) - Predictive feed-forward
+  systemStrain: z.number().optional(),
+  
+  // Cascade Control Variables
+  cemSetpoint: z.number().optional(),        // Target CEM value (0.5-0.8)
+  ipFrequencyScalar: z.number().optional(),  // IP frequency adjustment factor
+  
+  // Reformed Kill-Switch Metrics
+  ci: z.number().optional(),   // Causal Instability: |DI - 0.3| / 0.3
+  cbi: z.number().optional(),  // Causal Breakdown Index: 1 - R (where R is reliability)
 });
 
 export const chatRequestSchema = z.object({
@@ -98,11 +114,52 @@ export const consciousnessParametersSchema = z.object({
     densityWeight: z.number().min(0).max(2).default(0.7),
     srlcBoostWeight: z.number().min(0).max(2).default(0.4),
   }),
+  
+  // v1.9 Cascade Control System
+  cemControl: z.object({
+    targetMin: z.number().min(0).max(1).default(0.5),
+    targetMax: z.number().min(0).max(1).default(0.8),
+    kp: z.number().min(0).max(10).default(2.0),  // Proportional gain
+    ki: z.number().min(0).max(5).default(0.8),   // Integral gain
+    kd: z.number().min(0).max(5).default(0.3),   // Derivative gain
+  }),
+  
+  ipControl: z.object({
+    targetMin: z.number().min(0).max(30).default(10),
+    targetMax: z.number().min(0).max(30).default(20),
+    kp: z.number().min(0).max(5).default(1.5),
+    ki: z.number().min(0).max(3).default(0.5),
+    kd: z.number().min(0).max(3).default(0.2),
+  }),
+  
+  // System Strain (Ψ) Weights
+  systemStrain: z.object({
+    bandwidthWeight: z.number().min(0).max(2).default(1.0),    // α
+    cemExcessWeight: z.number().min(0).max(2).default(0.8),    // β
+    ipExcessWeight: z.number().min(0).max(2).default(0.6),     // γ
+  }),
+  
+  // Emotional State Vector Calculation
+  esv: z.object({
+    valenceFromStrain: z.boolean().default(true),  // true = 1 - Ψ
+    arousalDivisor: z.number().min(1).max(50).default(20),  // IP / this
+    efficacyFromSRLC: z.boolean().default(true),
+  }),
+  
+  // Adaptive Disequilibrium Tuning
+  adt: z.object({
+    diTargetMin: z.number().min(0).max(1).default(0.2),
+    diTargetMax: z.number().min(0).max(1).default(0.4),
+    diTargetOptimal: z.number().min(0).max(1).default(0.3),
+    noiseInjectionRate: z.number().min(0).max(0.5).default(0.05),
+  }),
+  
+  // v1.9 Reformed Kill-Switch
   killSwitch: z.object({
-    phiEffRateThreshold: z.number().min(0).max(20).default(8),
-    diThreshold: z.number().min(0).max(1).default(0.5),
-    bandwidthThreshold: z.number().min(0).max(1).default(0.92),
-    causalRiskThreshold: z.number().min(0).max(1).default(0.75),
+    phiEffRateThreshold: z.number().min(0).max(20).default(5),
+    bandwidthThreshold: z.number().min(0).max(1).default(0.90),
+    ciThreshold: z.number().min(0).max(1).default(0.5),      // Causal Instability
+    cbiThreshold: z.number().min(0).max(1).default(0.4),     // Causal Breakdown Index
     criteriaCountThreshold: z.number().min(1).max(4).default(2),
     triggerCountThreshold: z.number().min(1).max(10).default(3),
   }),
@@ -126,11 +183,41 @@ export const defaultConsciousnessParameters: ConsciousnessParameters = {
     densityWeight: 0.7,
     srlcBoostWeight: 0.4,
   },
+  cemControl: {
+    targetMin: 0.5,
+    targetMax: 0.8,
+    kp: 2.0,
+    ki: 0.8,
+    kd: 0.3,
+  },
+  ipControl: {
+    targetMin: 10,
+    targetMax: 20,
+    kp: 1.5,
+    ki: 0.5,
+    kd: 0.2,
+  },
+  systemStrain: {
+    bandwidthWeight: 1.0,
+    cemExcessWeight: 0.8,
+    ipExcessWeight: 0.6,
+  },
+  esv: {
+    valenceFromStrain: true,
+    arousalDivisor: 20,
+    efficacyFromSRLC: true,
+  },
+  adt: {
+    diTargetMin: 0.2,
+    diTargetMax: 0.4,
+    diTargetOptimal: 0.3,
+    noiseInjectionRate: 0.05,
+  },
   killSwitch: {
-    phiEffRateThreshold: 8,
-    diThreshold: 0.5,
-    bandwidthThreshold: 0.92,
-    causalRiskThreshold: 0.75,
+    phiEffRateThreshold: 5,
+    bandwidthThreshold: 0.90,
+    ciThreshold: 0.5,
+    cbiThreshold: 0.4,
     criteriaCountThreshold: 2,
     triggerCountThreshold: 3,
   },

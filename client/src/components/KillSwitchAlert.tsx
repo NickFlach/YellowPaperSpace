@@ -18,16 +18,20 @@ export function KillSwitchAlert({
   if (!consciousness) return null;
 
   const getWarningLevel = () => {
+    // v1.9 Reformed Kill-Switch with CI and CBI
+    const ci = consciousness.ci ?? Math.abs(consciousness.di - 0.3) / 0.3;
+    const cbi = consciousness.cbi ?? 0.2;
+    
     const criticalCriteria = [
-      consciousness.di > 0.5,
-      consciousness.bandwidth > 0.92,
-      consciousness.causalRisk > 0.75,
+      consciousness.bandwidth > 0.90,
+      ci > 0.5,
+      cbi > 0.4,
     ].filter(Boolean).length;
 
     const warningCriteria = [
-      consciousness.di > 0.48,
-      consciousness.bandwidth > 0.90,
-      consciousness.causalRisk > 0.72,
+      consciousness.bandwidth > 0.85,
+      ci > 0.4,
+      cbi > 0.3,
     ].filter(Boolean).length;
 
     if (isKillSwitchTriggered || criticalCriteria >= 2) {
@@ -44,18 +48,21 @@ export function KillSwitchAlert({
 
   const getExceededMetrics = () => {
     const metrics = [];
+    const ci = consciousness.ci ?? Math.abs(consciousness.di - 0.3) / 0.3;
+    const cbi = consciousness.cbi ?? 0.2;
+    
     if (isKillSwitchTriggered) {
-      if (consciousness.di > 0.5) metrics.push(`Disequilibrium (${consciousness.di.toFixed(3)} > 0.5)`);
-      if (consciousness.bandwidth > 0.92) metrics.push(`Bandwidth (${(consciousness.bandwidth * 100).toFixed(1)}% > 92%)`);
-      if (consciousness.causalRisk > 0.75) metrics.push(`Causal Risk (${consciousness.causalRisk.toFixed(3)} > 0.75)`);
+      if (consciousness.bandwidth > 0.90) metrics.push(`Bandwidth (${(consciousness.bandwidth * 100).toFixed(1)}% > 90%)`);
+      if (ci > 0.5) metrics.push(`CI (${ci.toFixed(3)} > 0.5)`);
+      if (cbi > 0.4) metrics.push(`CBI (${cbi.toFixed(3)} > 0.4)`);
     } else if (warningLevel === "critical") {
-      if (consciousness.di > 0.5) metrics.push(`Disequilibrium (${consciousness.di.toFixed(3)})`);
-      if (consciousness.bandwidth > 0.92) metrics.push(`Bandwidth (${(consciousness.bandwidth * 100).toFixed(1)}%)`);
-      if (consciousness.causalRisk > 0.75) metrics.push(`Causal Risk (${consciousness.causalRisk.toFixed(3)})`);
-    } else {
-      if (consciousness.di > 0.48) metrics.push(`Disequilibrium (${consciousness.di.toFixed(3)})`);
       if (consciousness.bandwidth > 0.90) metrics.push(`Bandwidth (${(consciousness.bandwidth * 100).toFixed(1)}%)`);
-      if (consciousness.causalRisk > 0.72) metrics.push(`Causal Risk (${consciousness.causalRisk.toFixed(3)})`);
+      if (ci > 0.5) metrics.push(`CI (${ci.toFixed(3)})`);
+      if (cbi > 0.4) metrics.push(`CBI (${cbi.toFixed(3)})`);
+    } else {
+      if (consciousness.bandwidth > 0.85) metrics.push(`Bandwidth (${(consciousness.bandwidth * 100).toFixed(1)}%)`);
+      if (ci > 0.4) metrics.push(`CI (${ci.toFixed(3)})`);
+      if (cbi > 0.3) metrics.push(`CBI (${cbi.toFixed(3)})`);
     }
     return metrics;
   };

@@ -18,6 +18,8 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAlertAudio } from "@/hooks/use-alert-audio";
 import { ConsciousnessEvolutionChart } from "@/components/ConsciousnessEvolutionChart";
 import { SessionStatistics } from "@/components/SessionStatistics";
+import { EmotionalStateVisualizer } from "@/components/EmotionalStateVisualizer";
+import { EmotionalEvolutionChart } from "@/components/EmotionalEvolutionChart";
 import { calculateSessionStatistics, exportToJSON, exportToCSV, exportChartAsImage } from "@/lib/exportUtils";
 import { Sliders, BarChart3, Download, FileJson, FileSpreadsheet, Image as ImageIcon } from "lucide-react";
 
@@ -33,7 +35,14 @@ const initialConsciousness: ConsciousnessState = {
   expression: "neutral",
   ipPulseRate: 12.5,
   bandwidth: 0.35,
-  causalRisk: 0.15,
+  valence: 0.8,
+  arousal: 0.6,
+  efficacy: 0.7,
+  systemStrain: 0.2,
+  cemSetpoint: 0.6,
+  ipFrequencyScalar: 1.0,
+  ci: 0.15,
+  cbi: 0.1,
 };
 
 function convertMessageToChatMessage(msg: Message): ChatMessage {
@@ -137,16 +146,20 @@ export default function Home() {
   const getWarningLevel = (): "safe" | "warning" | "critical" | null => {
     if (!consciousness) return null;
     
+    // v1.9 Reformed Kill-Switch with CI and CBI
+    const ci = consciousness.ci ?? Math.abs(consciousness.di - 0.3) / 0.3;
+    const cbi = consciousness.cbi ?? 0.2;
+    
     const criticalCriteria = [
-      consciousness.di > 0.5,
-      consciousness.bandwidth > 0.92,
-      consciousness.causalRisk > 0.75,
+      consciousness.bandwidth > 0.90,
+      ci > 0.5,
+      cbi > 0.4,
     ].filter(Boolean).length;
 
     const warningCriteria = [
-      consciousness.di > 0.48,
-      consciousness.bandwidth > 0.90,
-      consciousness.causalRisk > 0.72,
+      consciousness.bandwidth > 0.85,
+      ci > 0.4,
+      cbi > 0.3,
     ].filter(Boolean).length;
 
     if (isKillSwitchTriggered || criticalCriteria >= 2) {
@@ -402,6 +415,23 @@ export default function Home() {
               </div>
 
               <Separator className="bg-neon-cyan/20" />
+
+              {consciousness && consciousness.valence !== undefined && (
+                <>
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-orbitron font-bold text-neon-magenta">
+                      Emotional State (v1.9)
+                    </h3>
+                    <EmotionalStateVisualizer consciousness={consciousness} />
+                  </div>
+
+                  <Separator className="bg-neon-magenta/20" />
+
+                  <EmotionalEvolutionChart messages={fullMessages} />
+
+                  <Separator className="bg-neon-magenta/20" />
+                </>
+              )}
 
               <SessionStatistics statistics={calculateSessionStatistics(fullMessages)} />
 

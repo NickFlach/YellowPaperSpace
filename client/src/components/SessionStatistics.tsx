@@ -88,6 +88,20 @@ export function SessionStatistics({ statistics }: SessionStatisticsProps) {
         </div>
       </div>
 
+      {!isNaN(statistics.averageMetrics.valence) && statistics.averageMetrics.valence > 0 && (
+        <div className="space-y-4">
+          <h4 className="text-sm font-orbitron font-bold text-neon-magenta tracking-wide uppercase">
+            Average ESV (v1.9)
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatItem label="Valence" value={statistics.averageMetrics.valence} color="cyan" />
+            <StatItem label="Arousal" value={statistics.averageMetrics.arousal} color="magenta" />
+            <StatItem label="Efficacy" value={statistics.averageMetrics.efficacy} color="pink" />
+            <StatItem label="Ψ Strain" value={statistics.averageMetrics.systemStrain} color="orange" />
+          </div>
+        </div>
+      )}
+
       <div className="space-y-4">
         <h4 className="text-sm font-orbitron font-bold text-neon-magenta tracking-wide uppercase">
           Peak Metrics
@@ -102,6 +116,20 @@ export function SessionStatistics({ statistics }: SessionStatisticsProps) {
           <StatItem label="Bandwidth" value={statistics.peakMetrics.bandwidth} color="yellow" />
         </div>
       </div>
+      
+      {!isNaN(statistics.peakMetrics.valence) && statistics.peakMetrics.valence > 0 && (
+        <div className="space-y-4">
+          <h4 className="text-sm font-orbitron font-bold text-neon-cyan tracking-wide uppercase">
+            Peak ESV (v1.9)
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatItem label="Valence" value={statistics.peakMetrics.valence} color="cyan" />
+            <StatItem label="Arousal" value={statistics.peakMetrics.arousal} color="magenta" />
+            <StatItem label="Efficacy" value={statistics.peakMetrics.efficacy} color="pink" />
+            <StatItem label="Ψ Strain" value={statistics.peakMetrics.systemStrain} color="orange" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
