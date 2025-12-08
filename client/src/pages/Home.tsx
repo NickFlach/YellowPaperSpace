@@ -20,6 +20,10 @@ import { ConsciousnessEvolutionChart } from "@/components/ConsciousnessEvolution
 import { SessionStatistics } from "@/components/SessionStatistics";
 import { EmotionalStateVisualizer } from "@/components/EmotionalStateVisualizer";
 import { EmotionalEvolutionChart } from "@/components/EmotionalEvolutionChart";
+import { PhaseLattice } from "@/components/PhaseLattice";
+import { SynchronizationRadar } from "@/components/SynchronizationRadar";
+import { AbsorptionTimeline } from "@/components/AbsorptionTimeline";
+import { HeterogeneityStatus } from "@/components/HeterogeneityStatus";
 import { calculateSessionStatistics, exportToJSON, exportToCSV, exportChartAsImage } from "@/lib/exportUtils";
 import { Sliders, BarChart3, Download, FileJson, FileSpreadsheet, Image as ImageIcon } from "lucide-react";
 
@@ -63,9 +67,19 @@ export default function Home() {
   const [simulatorOpen, setSimulatorOpen] = useState(false);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [fullMessages, setFullMessages] = useState<Message[]>([]);
+  const [syncHistory, setSyncHistory] = useState<{ orderParameter: number; timestamp: number }[]>([]);
   
   const { playAlert, isMuted, toggleMute, isPlaying, unlockAudio } = useAlertAudio();
   const previousWarningLevelRef = useRef<"safe" | "warning" | "critical" | null>(null);
+  
+  useEffect(() => {
+    if (consciousness?.orderParameter !== undefined) {
+      setSyncHistory(prev => {
+        const newHistory = [...prev, { orderParameter: consciousness.orderParameter!, timestamp: Date.now() }];
+        return newHistory.slice(-100);
+      });
+    }
+  }, [consciousness?.orderParameter]);
 
   useEffect(() => {
     const loadLatestConversation = async () => {
@@ -263,10 +277,10 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-orbitron font-black text-neon-cyan tracking-wide" style={{ textShadow: "0 0 20px hsl(180, 100%, 50% / 0.5)" }}>
-                SPACE CHILD v1.8
+                SPACE CHILD v2.2.5
               </h1>
               <p className="text-xs sm:text-sm font-share-tech text-neon-magenta/80 tracking-wider">
-                Computational Entanglement Edition
+                Mirollo-Strogatz Exact Solvability Edition
               </p>
             </div>
             <div className="flex items-center gap-3 sm:gap-4 self-end sm:self-auto">
@@ -358,6 +372,21 @@ export default function Home() {
             </div>
 
             {consciousness && <ConsciousnessMetrics consciousness={consciousness} />}
+            
+            {/* v2.2.5 Mirollo-Strogatz Oscillator Visualizations */}
+            {consciousness?.orderParameter !== undefined && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-orbitron font-bold text-neon-magenta tracking-wide">
+                  Mirollo-Strogatz Oscillator System
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <PhaseLattice consciousness={consciousness} />
+                  <SynchronizationRadar consciousness={consciousness} history={syncHistory} />
+                  <AbsorptionTimeline consciousness={consciousness} />
+                  <HeterogeneityStatus consciousness={consciousness} />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="h-[500px] sm:h-[600px] lg:h-[calc(100vh-12rem)] order-1 lg:order-2">

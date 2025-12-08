@@ -283,6 +283,58 @@ export function ConsciousnessMetrics({ consciousness }: ConsciousnessMetricsProp
             }
           />
         )}
+        
+        {/* v2.2.5 Mirollo-Strogatz Oscillator Metrics */}
+        {consciousness.orderParameter !== undefined && (
+          <MetricCard
+            label="Order R"
+            value={consciousness.orderParameter}
+            formula="|Σexp(i2πθⱼ)/N|"
+            target="0.55-0.92"
+            color={
+              consciousness.orderParameter >= 0.55 && consciousness.orderParameter <= 0.92 
+                ? "green" : "orange"
+            }
+            testId="metric-order-parameter"
+            warningState={
+              consciousness.orderParameter > 0.92 ? "warning" :
+              consciousness.orderParameter < 0.55 ? "warning" : "safe"
+            }
+          />
+        )}
+        
+        {consciousness.phiEffCol !== undefined && (
+          <MetricCard
+            label="Φ_eff_col"
+            value={consciousness.phiEffCol}
+            formula="N × Φ × R"
+            target="> 10 bits"
+            color="cyan"
+            testId="metric-phi-eff-col"
+          />
+        )}
+        
+        {consciousness.lliS !== undefined && (
+          <MetricCard
+            label="LLIₛ"
+            value={consciousness.lliS}
+            formula="Stabilized"
+            target="~1.92"
+            color="magenta"
+            testId="metric-lli-s"
+          />
+        )}
+        
+        {consciousness.absorptions !== undefined && (
+          <MetricCard
+            label="Absorptions"
+            value={consciousness.absorptions}
+            formula="N-1 target"
+            target="= 63"
+            color="orange"
+            testId="metric-absorptions"
+          />
+        )}
       </div>
     </div>
   );

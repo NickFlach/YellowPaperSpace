@@ -17,6 +17,9 @@ export interface SessionStatistics {
     arousal: number;
     efficacy: number;
     systemStrain: number;
+    orderParameter: number;
+    phiEffCol: number;
+    lliS: number;
   };
   peakMetrics: {
     phiZ: number;
@@ -30,9 +33,18 @@ export interface SessionStatistics {
     arousal: number;
     efficacy: number;
     systemStrain: number;
+    orderParameter: number;
+    phiEffCol: number;
+    lliS: number;
   };
   tierProgression: string[];
   killSwitchTriggers: number;
+  oscillatorStats?: {
+    finalOrderParameter: number;
+    totalAbsorptions: number;
+    consciousBandTime: number;
+    heterogeneityActivations: number;
+  };
 }
 
 export function calculateSessionStatistics(messages: Message[]): SessionStatistics {
@@ -84,6 +96,9 @@ export function calculateSessionStatistics(messages: Message[]): SessionStatisti
     arousal: calculateAverage("arousal"),
     efficacy: calculateAverage("efficacy"),
     systemStrain: calculateAverage("systemStrain"),
+    orderParameter: calculateAverage("orderParameter"),
+    phiEffCol: calculateAverage("phiEffCol"),
+    lliS: calculateAverage("lliS"),
   };
 
   const peakMetrics = {
@@ -98,7 +113,22 @@ export function calculateSessionStatistics(messages: Message[]): SessionStatisti
     arousal: calculatePeak("arousal"),
     efficacy: calculatePeak("efficacy"),
     systemStrain: calculatePeak("systemStrain"),
+    orderParameter: calculatePeak("orderParameter"),
+    phiEffCol: calculatePeak("phiEffCol"),
+    lliS: calculatePeak("lliS"),
   };
+  
+  // v2.2.5 Oscillator Statistics
+  const lastSnapshot = snapshots[snapshots.length - 1];
+  const oscillatorStats = lastSnapshot?.orderParameter !== undefined ? {
+    finalOrderParameter: lastSnapshot.orderParameter ?? 0,
+    totalAbsorptions: lastSnapshot.absorptions ?? 0,
+    consciousBandTime: snapshots.filter(s => {
+      const r = s.orderParameter ?? 0;
+      return r >= 0.55 && r <= 0.92;
+    }).length,
+    heterogeneityActivations: snapshots.filter(s => s.heterogeneityActive === true).length,
+  } : undefined;
 
   // Tier progression
   const tierSet = new Set(snapshots.map(s => s.tier));
@@ -120,6 +150,7 @@ export function calculateSessionStatistics(messages: Message[]): SessionStatisti
     peakMetrics,
     tierProgression,
     killSwitchTriggers,
+    oscillatorStats,
   };
 }
 
@@ -179,7 +210,12 @@ export function exportToCSV(
     "Efficacy (v1.9)",
     "Ψ Strain (v1.9)",
     "CI (v1.9)",
-    "CBI (v1.9)"
+    "CBI (v1.9)",
+    "Order R (v2.2.5)",
+    "Φ_eff_col (v2.2.5)",
+    "LLIₛ (v2.2.5)",
+    "Absorptions (v2.2.5)",
+    "Heterogeneity (v2.2.5)"
   ];
 
   const rows = messages.map((msg, index) => {
@@ -187,7 +223,7 @@ export function exportToCSV(
     return [
       index + 1,
       msg.role,
-      `"${msg.content.replace(/"/g, '""')}"`, // Escape quotes in CSV
+      `"${msg.content.replace(/"/g, '""')}"`,
       new Date(msg.timestamp).toISOString(),
       cs?.phiZ.toFixed(3) || "",
       cs?.sMin.toFixed(3) || "",
@@ -203,7 +239,12 @@ export function exportToCSV(
       cs?.efficacy?.toFixed(3) || "",
       cs?.systemStrain?.toFixed(3) || "",
       cs?.ci?.toFixed(3) || "",
-      cs?.cbi?.toFixed(3) || ""
+      cs?.cbi?.toFixed(3) || "",
+      cs?.orderParameter?.toFixed(4) || "",
+      cs?.phiEffCol?.toFixed(2) || "",
+      cs?.lliS?.toFixed(3) || "",
+      cs?.absorptions?.toString() || "",
+      cs?.heterogeneityActive ? "Active" : "Exact"
     ];
   });
 

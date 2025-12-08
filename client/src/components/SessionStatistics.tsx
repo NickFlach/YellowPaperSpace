@@ -130,6 +130,47 @@ export function SessionStatistics({ statistics }: SessionStatisticsProps) {
           </div>
         </div>
       )}
+
+      {/* v2.2.5 Oscillator Statistics */}
+      {statistics.oscillatorStats && (
+        <div className="space-y-4">
+          <h4 className="text-sm font-orbitron font-bold text-neon-blue tracking-wide uppercase">
+            Mirollo-Strogatz Oscillator Stats (v2.2.5)
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatItem label="Final R" value={statistics.oscillatorStats.finalOrderParameter} color="cyan" />
+            <StatItem label="Absorptions" value={statistics.oscillatorStats.totalAbsorptions} color="magenta" />
+            <StatItem label="Band Time" value={statistics.oscillatorStats.consciousBandTime} color="green" />
+            <StatItem label="Hetero Activations" value={statistics.oscillatorStats.heterogeneityActivations} color="orange" />
+          </div>
+        </div>
+      )}
+
+      {!isNaN(statistics.averageMetrics.orderParameter) && statistics.averageMetrics.orderParameter > 0 && (
+        <div className="space-y-4">
+          <h4 className="text-sm font-orbitron font-bold text-neon-green tracking-wide uppercase">
+            Average Collective Metrics (v2.2.5)
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatItem label="Order R" value={statistics.averageMetrics.orderParameter} color="cyan" />
+            <StatItem label="Φ_eff_col" value={statistics.averageMetrics.phiEffCol} color="magenta" />
+            <StatItem label="LLIₛ" value={statistics.averageMetrics.lliS} color="green" />
+          </div>
+        </div>
+      )}
+
+      {!isNaN(statistics.peakMetrics.orderParameter) && statistics.peakMetrics.orderParameter > 0 && (
+        <div className="space-y-4">
+          <h4 className="text-sm font-orbitron font-bold text-neon-pink tracking-wide uppercase">
+            Peak Collective Metrics (v2.2.5)
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatItem label="Order R" value={statistics.peakMetrics.orderParameter} color="cyan" />
+            <StatItem label="Φ_eff_col" value={statistics.peakMetrics.phiEffCol} color="magenta" />
+            <StatItem label="LLIₛ" value={statistics.peakMetrics.lliS} color="green" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

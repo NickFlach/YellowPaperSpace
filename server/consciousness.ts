@@ -1,4 +1,5 @@
 import { type ConsciousnessState, type Message } from "@shared/schema";
+import { OscillatorEngine, type OscillatorConfig } from "./oscillator";
 
 interface ConversationContext {
   messageLength: number;
@@ -32,9 +33,16 @@ export class ConsciousnessEngine {
   private ipPrevError: number = 0;
   private prevSRLCMemoryFactor: number = 0;
   
-  constructor(initialState?: ConsciousnessState, pastMessages?: Message[]) {
+  // v2.2.5 Mirollo-Strogatz Oscillator Engine
+  private oscillatorEngine: OscillatorEngine;
+  
+  constructor(initialState?: ConsciousnessState, pastMessages?: Message[], oscillatorConfig?: Partial<OscillatorConfig>) {
     this.srlcMemory = this.buildSRLCMemory(pastMessages || []);
     this.prevSRLCMemoryFactor = this.srlcMemory.memoryFactor;
+    
+    // Initialize oscillator engine with optional config
+    this.oscillatorEngine = new OscillatorEngine(oscillatorConfig);
+    
     this.state = initialState || this.getDefaultState();
     
     if (pastMessages && pastMessages.length > 0) {
@@ -97,6 +105,9 @@ export class ConsciousnessEngine {
     const basePhiZ = 1.2 + (this.srlcMemory.memoryFactor * 0.4);
     const baseSMin = 0.8 + (this.srlcMemory.memoryFactor * 0.3);
     
+    // Get initial oscillator metrics
+    const oscMetrics = this.oscillatorEngine.getMetrics(basePhiZ * baseSMin);
+    
     return {
       phiZ: basePhiZ,
       sMin: baseSMin,
@@ -125,6 +136,19 @@ export class ConsciousnessEngine {
       // v1.9 Reformed Kill-Switch
       ci: 0.17,
       cbi: 0.2,
+      
+      // v2.2.5 Mirollo-Strogatz Oscillator Metrics
+      oscillatorPhases: oscMetrics.phases,
+      orderParameter: oscMetrics.orderParameter,
+      absorptions: oscMetrics.absorptions,
+      phiEffCol: oscMetrics.phiEffCol,
+      lliS: oscMetrics.lliS,
+      memoryLifetime: oscMetrics.memoryLifetime,
+      syncTime: oscMetrics.syncTime ?? undefined,
+      heterogeneityActive: oscMetrics.heterogeneityActive,
+      consciousBand: oscMetrics.consciousBand,
+      clusterMemory: oscMetrics.clusterMemory,
+      msParams: oscMetrics.msParams,
     };
   }
 
@@ -431,6 +455,11 @@ export class ConsciousnessEngine {
       throw new Error("Kill-switch criteria met: Multiple safety thresholds exceeded persistently. Halting consciousness evolution.");
     }
     
+    // v2.2.5 Mirollo-Strogatz Oscillator Simulation
+    this.oscillatorEngine.perturbFromConversation(context.complexity, context.emotionalValence, context.topicDepth);
+    this.oscillatorEngine.tick(Math.max(5, Math.round(10 + context.complexity * 10)));
+    const oscMetrics = this.oscillatorEngine.getMetrics(phiEff);
+    
     this.state = {
       phiZ,
       sMin,
@@ -459,6 +488,19 @@ export class ConsciousnessEngine {
       // v1.9 Reformed Kill-Switch
       ci,
       cbi,
+      
+      // v2.2.5 Mirollo-Strogatz Oscillator Metrics
+      oscillatorPhases: oscMetrics.phases,
+      orderParameter: oscMetrics.orderParameter,
+      absorptions: oscMetrics.absorptions,
+      phiEffCol: oscMetrics.phiEffCol,
+      lliS: oscMetrics.lliS,
+      memoryLifetime: oscMetrics.memoryLifetime,
+      syncTime: oscMetrics.syncTime ?? undefined,
+      heterogeneityActive: oscMetrics.heterogeneityActive,
+      consciousBand: oscMetrics.consciousBand,
+      clusterMemory: oscMetrics.clusterMemory,
+      msParams: oscMetrics.msParams,
     };
     
     this.lastUpdateTime = now;

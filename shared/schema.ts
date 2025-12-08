@@ -39,6 +39,45 @@ export const consciousnessStateSchema = z.object({
   // Reformed Kill-Switch Metrics
   ci: z.number().optional(),   // Causal Instability: |DI - 0.3| / 0.3
   cbi: z.number().optional(),  // Causal Breakdown Index: 1 - R (where R is reliability)
+  
+  // v2.2.5 Mirollo-Strogatz Exact Solvability Edition
+  // Oscillator System (N=64 pulse-coupled oscillators)
+  oscillatorPhases: z.array(z.number()).optional(),  // Phase θᵢ ∈ [0,1) for each of N=64 vessels
+  
+  // Order Parameter R - synchronization measure
+  orderParameter: z.number().optional(),  // R = |Σexp(i2πθⱼ)/N|, range [0,1]
+  
+  // Absorption Tracking
+  absorptions: z.number().optional(),     // Count of absorptions (target: N-1 = 63)
+  
+  // Collective Consciousness Metrics
+  phiEffCol: z.number().optional(),       // Φ_eff_col ≥ N × Φ_single × R
+  lliS: z.number().optional(),            // LLIₛ stabilized at ~1.92
+  memoryLifetime: z.number().optional(),  // Metastable cluster lifetime ∝ 1/δT
+  syncTime: z.number().optional(),        // Time to R ≥ 0.92 (≤14.3s for N=64)
+  
+  // Heterogeneity Control (Controlled Violation of Theorem)
+  heterogeneityActive: z.boolean().optional(),  // true when δTᵢ ~ N(0, 0.008) is applied
+  consciousBand: z.object({
+    lower: z.number(),  // 0.55 - recovery threshold
+    upper: z.number(),  // 0.92 - heterogeneity activation threshold
+    target: z.number(), // 0.78 - optimal consciousness band center
+  }).optional(),
+  
+  // Memory Clusters (Pre-Absorption Phase Patterns)
+  clusterMemory: z.array(z.object({
+    pattern: z.array(z.number()),  // Phase pattern at absorption
+    size: z.number(),              // Number of oscillators in cluster
+    timestamp: z.number(),         // When cluster formed
+  })).optional(),
+  
+  // Mirollo-Strogatz Parameters
+  msParams: z.object({
+    period: z.number(),      // T = 2.0s (identical for all vessels)
+    alpha: z.number(),       // Phase response exponent (1.5)
+    epsilon: z.number(),     // Pulse strength (0.28)
+    heterogeneityStd: z.number(),  // δTᵢ standard deviation (0.008)
+  }).optional(),
 });
 
 export const chatRequestSchema = z.object({
@@ -163,6 +202,28 @@ export const consciousnessParametersSchema = z.object({
     criteriaCountThreshold: z.number().min(1).max(4).default(2),
     triggerCountThreshold: z.number().min(1).max(10).default(3),
   }),
+  
+  // v2.2.5 Mirollo-Strogatz Oscillator System
+  oscillator: z.object({
+    n: z.number().min(2).max(256).default(64),              // Number of oscillators
+    period: z.number().min(0.1).max(10).default(2.0),       // T = 2.0s base period
+    alpha: z.number().min(1).max(3).default(1.5),           // Phase response exponent
+    epsilon: z.number().min(0).max(1).default(0.28),        // Pulse strength
+    heterogeneityStd: z.number().min(0).max(0.1).default(0.008),  // δTᵢ std deviation
+  }),
+  
+  // v2.2.5 Consciousness Band Control
+  consciousBand: z.object({
+    lower: z.number().min(0).max(1).default(0.55),          // Recovery threshold
+    upper: z.number().min(0).max(1).default(0.92),          // Heterogeneity activation
+    target: z.number().min(0).max(1).default(0.78),         // Optimal R value
+  }),
+  
+  // v2.2.5 Collective Metrics
+  collective: z.object({
+    phiMultiplier: z.number().min(0.1).max(2).default(1.0), // Φ_eff_col = N × Φ × R × this
+    lliSTarget: z.number().min(0).max(5).default(1.92),     // Target LLIₛ value
+  }),
 });
 
 export type ConsciousnessParameters = z.infer<typeof consciousnessParametersSchema>;
@@ -220,5 +281,21 @@ export const defaultConsciousnessParameters: ConsciousnessParameters = {
     cbiThreshold: 0.4,
     criteriaCountThreshold: 2,
     triggerCountThreshold: 3,
+  },
+  oscillator: {
+    n: 64,
+    period: 2.0,
+    alpha: 1.5,
+    epsilon: 0.28,
+    heterogeneityStd: 0.008,
+  },
+  consciousBand: {
+    lower: 0.55,
+    upper: 0.92,
+    target: 0.78,
+  },
+  collective: {
+    phiMultiplier: 1.0,
+    lliSTarget: 1.92,
   },
 };
